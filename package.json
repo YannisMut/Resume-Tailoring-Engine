@@ -1,0 +1,16 @@
+{
+  "name": "resume-tailoring-engine",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "turbo": "2.8.14",
+    "typescript": "5.9.3"
+  }
+}
