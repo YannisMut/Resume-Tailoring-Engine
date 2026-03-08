@@ -1,0 +1,23 @@
+{
+  "name": "@resume/web",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@resume/types": "*",
+    "next": "16.1.6",
+    "react": "latest",
+    "react-dom": "latest",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "5.9.3"
+  }
+}
