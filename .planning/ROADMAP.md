@@ -32,7 +32,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Zod schemas validate all shared types at runtime
   4. Global Express error middleware catches and formats service errors without scattered try/catch
   5. TypeScript strict mode passes with zero errors across all packages
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Monorepo scaffold, workspace config, and Wave 0 test infrastructure
+- [ ] 01-02-PLAN.md — packages/types: ResumeStructure, RewrittenBullet, AnalysisResult Zod schemas
+- [ ] 01-03-PLAN.md — apps/api: Express 5 shell with typed error middleware
+- [ ] 01-04-PLAN.md — apps/web: Next.js 16 shell with @resume/types import validation
+- [ ] 01-05-PLAN.md — Phase 1 verification: full test suite + turbo dev startup checkpoint
 
 ### Phase 2: PDF Parsing
 **Goal**: Users can upload a PDF resume and the system produces a faithful ResumeStructure — or rejects the file with a clear, specific error message
@@ -108,7 +115,7 @@ Note: Phase 5 can be developed in parallel with Phase 4 (both depend on Phase 2 
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 0/5 | In progress | - |
 | 2. PDF Parsing | 0/TBD | Not started | - |
 | 3. Analysis | 0/TBD | Not started | - |
 | 4. AI Rewrites | 0/TBD | Not started | - |
