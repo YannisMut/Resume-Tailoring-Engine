@@ -115,7 +115,7 @@ Note: Phase 5 can be developed in parallel with Phase 4 (both depend on Phase 2 
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/5 | In progress | - |
+| 1. Foundation | 1/5 | In Progress|  |
 | 2. PDF Parsing | 0/TBD | Not started | - |
 | 3. Analysis | 0/TBD | Not started | - |
 | 4. AI Rewrites | 0/TBD | Not started | - |
