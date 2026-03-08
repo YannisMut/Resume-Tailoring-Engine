@@ -78,16 +78,14 @@
 
 ## Traceability
 
-Updated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INPUT-01 | Phase 1 | Pending |
-| INPUT-02 | Phase 1 | Pending |
-| INPUT-03 | Phase 1 | Pending |
+| INPUT-01 | Phase 2 | Pending |
+| INPUT-02 | Phase 2 | Pending |
+| INPUT-03 | Phase 2 | Pending |
 | INPUT-04 | Phase 2 | Pending |
 | INPUT-05 | Phase 2 | Pending |
-| INPUT-06 | Phase 5 | Pending |
+| INPUT-06 | Phase 6 | Pending |
 | ANAL-01 | Phase 3 | Pending |
 | ANAL-02 | Phase 3 | Pending |
 | ANAL-03 | Phase 3 | Pending |
@@ -95,21 +93,21 @@ Updated during roadmap creation.
 | AI-02 | Phase 4 | Pending |
 | AI-03 | Phase 4 | Pending |
 | AI-04 | Phase 4 | Pending |
-| REVIEW-01 | Phase 5 | Pending |
-| REVIEW-02 | Phase 5 | Pending |
-| REVIEW-03 | Phase 6 | Pending |
-| REVIEW-04 | Phase 5 | Pending |
-| REVIEW-05 | Phase 6 | Pending |
-| REVIEW-06 | Phase 5 | Pending |
-| OUT-01 | Phase 6 | Pending |
-| OUT-02 | Phase 5 | Pending |
-| OUT-03 | Phase 5 | Pending |
+| REVIEW-01 | Phase 6 | Pending |
+| REVIEW-02 | Phase 6 | Pending |
+| REVIEW-03 | Phase 7 | Pending |
+| REVIEW-04 | Phase 6 | Pending |
+| REVIEW-05 | Phase 7 | Pending |
+| REVIEW-06 | Phase 7 | Pending |
+| OUT-01 | Phase 5 | Pending |
+| OUT-02 | Phase 6 | Pending |
+| OUT-03 | Phase 6 | Pending |
 
 **Coverage:**
-- v1 requirements: 23 total
-- Mapped to phases: 23
+- v1 requirements: 22 total
+- Mapped to phases: 22
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-08*
-*Last updated: 2026-03-08 after initial definition*
+*Last updated: 2026-03-08 — traceability updated after roadmap creation*
