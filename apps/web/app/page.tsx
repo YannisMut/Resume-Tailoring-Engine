@@ -1,3 +1,9 @@
+import type { ResumeStructure } from '@resume/types';
+
+// Type-level check: confirm @resume/types is importable and ResumeStructure has layout fields.
+// This is a compile-time validation only — no runtime effect.
+type _LayoutCheck = ResumeStructure['meta']['marginTop']; // must be number — fails TS if type is missing
+
 export default function Home() {
   return (
     <main>
