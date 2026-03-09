@@ -1,6 +1,7 @@
 {
   "name": "resume-tailoring-engine",
   "private": true,
+  "packageManager": "npm@10.9.2",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "turbo dev",
