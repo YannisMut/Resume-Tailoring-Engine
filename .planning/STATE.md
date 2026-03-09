@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 01-foundation-01-01-PLAN.md
-last_updated: "2026-03-08T23:59:17.795Z"
-last_activity: 2026-03-08 — Roadmap created, phases derived from requirements
+status: executing
+stopped_at: Completed 01-foundation-01-02-PLAN.md
+last_updated: "2026-03-09T00:03:28.074Z"
+last_activity: "2026-03-08 — Plan 01-01 complete: monorepo scaffold, workspace config, Wave 0 test infrastructure"
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 5
-  completed_plans: 1
-  percent: 20
+  completed_plans: 2
+  percent: 40
 ---
 
 # Project State
@@ -26,27 +26,27 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 ## Current Position
 
 Phase: 1 of 7 (Foundation)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-08 — Plan 01-01 complete: monorepo scaffold, workspace config, Wave 0 test infrastructure
+Last activity: 2026-03-08 — Plan 01-02 complete: @resume/types Zod schemas and TypeScript types, Wave 0 test suite GREEN
 
-Progress: [██░░░░░░░░] 20%
+Progress: [████░░░░░░] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 2 min
-- Total execution time: 0.03 hours
+- Total plans completed: 2
+- Average duration: 3 min
+- Total execution time: 0.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-foundation | 1 | 2 min | 2 min |
+| 01-foundation | 2 | 6 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2 min)
+- Last 5 plans: 01-01 (2 min), 01-02 (4 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -65,6 +65,9 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: packages/types exports ./src/index.ts directly so apps can import without a build step during development
 - [Phase 01-foundation]: tsconfig.base.json strict mode applied before any implementation to avoid painful migration later
 - [Phase 01-foundation]: Wave 0 test scaffolds written in RED state before implementation per Nyquist Rule — defines contract ahead of Plans 02 and 03
+- [Phase 01-foundation]: Zod schemas are single source of truth — TypeScript types inferred via z.infer, no duplicate interface definitions
+- [Phase 01-foundation]: All @resume/types fields are JSON-serializable primitives only — enables stateless AnalysisResult round-trip through client
+- [Phase 01-foundation]: TextStyle includes optional lineSpacingPt, spaceBefore, spaceAfter — ensures Phase 5 DOCX can reconstruct paragraph spacing
 
 ### Pending Todos
 
@@ -78,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08T23:59:17.792Z
-Stopped at: Completed 01-foundation-01-01-PLAN.md
+Last session: 2026-03-09T00:03:28.071Z
+Stopped at: Completed 01-foundation-01-02-PLAN.md
 Resume file: None
