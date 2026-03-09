@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-foundation-01-02-PLAN.md
-last_updated: "2026-03-09T00:03:28.074Z"
-last_activity: "2026-03-08 — Plan 01-01 complete: monorepo scaffold, workspace config, Wave 0 test infrastructure"
+stopped_at: Completed 01-foundation-01-04-PLAN.md
+last_updated: "2026-03-09T02:19:55.725Z"
+last_activity: "2026-03-08 — Plan 01-04 complete: Next.js 16 app shell, transpilePackages config, @resume/types importable from frontend"
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 5
-  completed_plans: 2
-  percent: 40
+  completed_plans: 4
+  percent: 80
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-08)
 ## Current Position
 
 Phase: 1 of 7 (Foundation)
-Plan: 2 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-08 — Plan 01-02 complete: @resume/types Zod schemas and TypeScript types, Wave 0 test suite GREEN
+Last activity: 2026-03-08 — Plan 01-04 complete: Next.js 16 app shell, transpilePackages config, @resume/types importable from frontend
 
-Progress: [████░░░░░░] 40%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -50,6 +50,8 @@ Progress: [████░░░░░░] 40%
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01-foundation P03 | 5 | 2 tasks | 3 files |
+| Phase 01-foundation P04 | 5 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -68,6 +70,10 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: Zod schemas are single source of truth — TypeScript types inferred via z.infer, no duplicate interface definitions
 - [Phase 01-foundation]: All @resume/types fields are JSON-serializable primitives only — enables stateless AnalysisResult round-trip through client
 - [Phase 01-foundation]: TextStyle includes optional lineSpacingPt, spaceBefore, spaceAfter — ensures Phase 5 DOCX can reconstruct paragraph spacing
+- [Phase 01-foundation]: errorMiddleware is the single catch boundary — no try/catch in route handlers (Express 5 propagates async throws automatically)
+- [Phase 01-foundation]: AppError subclasses define error contract before all service implementation — PdfParseError(422) and OpenAiTimeoutError(504/retryable) cover Phase 2 and 3 failure modes
+- [Phase 01-foundation]: apps/web tsconfig overrides module/moduleResolution to ESNext/bundler — Next.js internal type declarations incompatible with NodeNext resolution in tsconfig.base.json
+- [Phase 01-foundation]: transpilePackages: ['@resume/types'] in next.config.ts required because packages/types exports TS source directly with no build step
 
 ### Pending Todos
 
@@ -81,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09T00:03:28.071Z
-Stopped at: Completed 01-foundation-01-02-PLAN.md
+Last session: 2026-03-09T02:19:55.723Z
+Stopped at: Completed 01-foundation-01-04-PLAN.md
 Resume file: None
