@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { errorMiddleware } from './middleware/error.middleware.js';
+import { analyzeRouter } from './routes/analyze.route.js';
 
 const app = express();
 const PORT = process.env['PORT'] ?? 3001;
@@ -18,9 +19,8 @@ app.use(cors({ origin: WEB_ORIGIN }));
 // Limit to 1mb — ResumeStructure is a JSON tree, not a file upload
 app.use(express.json({ limit: '1mb' }));
 
-// Routes — stubs registered in Phase 4 and 5
-// app.use('/api', analyzeRouter);
-// app.use('/api', generateRouter);
+// Routes
+app.use('/api', analyzeRouter);
 
 // Health check
 app.get('/health', (_req, res) => {
