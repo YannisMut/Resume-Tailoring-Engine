@@ -72,17 +72,23 @@ describe('POST /api/analyze', () => {
 
     const res = await request(app)
       .post('/api/analyze')
-      .attach('resume', validPdfBuffer, { filename: 'resume.pdf', contentType: 'application/pdf' });
+      .attach('resume', validPdfBuffer, { filename: 'resume.pdf', contentType: 'application/pdf' })
+      .field('jobDescription', 'Software engineer with TypeScript experience');
 
     expect(res.status).toBe(200);
+    // Route now returns AnalysisResult; resumeStructure contains the parsed resume
     expect(res.body).toMatchObject({
-      meta: expect.objectContaining({ pageWidth: 612 }),
-      header: expect.any(Array),
-      sections: expect.any(Array),
+      score: expect.any(Number),
+      gaps: expect.any(Array),
+      rewrites: [],
+      resumeStructure: expect.objectContaining({
+        meta: expect.objectContaining({ pageWidth: 612 }),
+        header: expect.any(Array),
+        sections: expect.any(Array),
+      }),
     });
-    // Validate shape matches ResumeStructureSchema
-    expect(res.body.sections).toHaveLength(1);
-    expect(res.body.sections[0].heading).toBe('EXPERIENCE');
+    expect(res.body.resumeStructure.sections).toHaveLength(1);
+    expect(res.body.resumeStructure.sections[0].heading).toBe('EXPERIENCE');
   });
 
   it('returns 415 with error pdf_not_pdf when a PNG file is uploaded', async () => {
@@ -110,7 +116,8 @@ describe('POST /api/analyze', () => {
 
     const res = await request(app)
       .post('/api/analyze')
-      .attach('resume', validPdfBuffer, { filename: 'encrypted.pdf', contentType: 'application/pdf' });
+      .attach('resume', validPdfBuffer, { filename: 'encrypted.pdf', contentType: 'application/pdf' })
+      .field('jobDescription', 'Software engineer with TypeScript experience');
 
     expect(res.status).toBe(422);
     expect(res.body.error).toBe('pdf_encrypted');
@@ -123,7 +130,8 @@ describe('POST /api/analyze', () => {
 
     const res = await request(app)
       .post('/api/analyze')
-      .attach('resume', validPdfBuffer, { filename: 'scanned.pdf', contentType: 'application/pdf' });
+      .attach('resume', validPdfBuffer, { filename: 'scanned.pdf', contentType: 'application/pdf' })
+      .field('jobDescription', 'Software engineer with TypeScript experience');
 
     expect(res.status).toBe(422);
     expect(res.body.error).toBe('pdf_scanned');
