@@ -39,19 +39,37 @@ const BULLET_FIXTURE_2: Bullet = {
   },
 };
 
+const STYLE_FIXTURE = {
+  fontName: 'Calibri',
+  fontSize: 22,
+  bold: true,
+  italic: false,
+  color: '#000000',
+};
+
 const RESUME_FIXTURE: ResumeStructure = {
+  meta: {
+    pageWidth: 612,
+    pageHeight: 792,
+    marginTop: 72,
+    marginBottom: 72,
+    marginLeft: 72,
+    marginRight: 72,
+  },
   header: [],
   sections: [
     {
+      id: 'experience-0',
       heading: 'Experience',
+      headingStyle: STYLE_FIXTURE,
       items: [
         {
+          id: 'experience-0-item-0',
           bullets: [BULLET_FIXTURE, BULLET_FIXTURE_2],
         },
       ],
     },
   ],
-  margins: { top: 72, bottom: 72, left: 72, right: 72 },
 };
 
 beforeEach(() => {
@@ -103,8 +121,8 @@ describe('rewriteAllBullets', () => {
     const results = await rewriteAllBullets(RESUME_FIXTURE, 'developer role', ['typescript']);
 
     expect(results).toHaveLength(2);
-    expect(results[0].id).toBe(BULLET_FIXTURE.id);
-    expect(results[1].id).toBe(BULLET_FIXTURE_2.id);
+    expect(results[0]!.id).toBe(BULLET_FIXTURE.id);
+    expect(results[1]!.id).toBe(BULLET_FIXTURE_2.id);
   });
 });
 
@@ -118,9 +136,9 @@ describe('SYSTEM_PROMPT content (AI-02)', () => {
 
     await rewriteBullet(BULLET_FIXTURE, 'jd', []);
 
-    const callArgs = mockCreate.mock.calls[0][0];
-    const systemMessage = callArgs.messages.find((m: { role: string }) => m.role === 'system');
-    expect(systemMessage.content).toContain('Do NOT invent');
+    const callArgs = mockCreate.mock.calls[0]![0] as { messages: { role: string; content: string }[] };
+    const systemMessage = callArgs.messages.find((m) => m.role === 'system');
+    expect(systemMessage!.content).toContain('Do NOT invent');
   });
 
   it('contains explicit prohibition against mentioning technologies not in original', async () => {
@@ -130,9 +148,9 @@ describe('SYSTEM_PROMPT content (AI-02)', () => {
 
     await rewriteBullet(BULLET_FIXTURE, 'jd', []);
 
-    const callArgs = mockCreate.mock.calls[0][0];
-    const systemMessage = callArgs.messages.find((m: { role: string }) => m.role === 'system');
-    expect(systemMessage.content).toContain('Do NOT mention any technology');
+    const callArgs = mockCreate.mock.calls[0]![0] as { messages: { role: string; content: string }[] };
+    const systemMessage = callArgs.messages.find((m) => m.role === 'system');
+    expect(systemMessage!.content).toContain('Do NOT mention any technology');
   });
 });
 
@@ -149,12 +167,14 @@ describe('withRetry — retry behavior (AI-03, AI-04)', () => {
     mockCreate.mockRejectedValue(timeoutError);
 
     const promise = rewriteBullet(BULLET_FIXTURE, 'jd', []);
+    // Attach rejection handler immediately to prevent unhandled rejection
+    const assertion = expect(promise).rejects.toBeInstanceOf(OpenAiTimeoutError);
 
     // Advance through backoff delays: 1000ms after attempt 1, 2000ms after attempt 2
     await vi.advanceTimersByTimeAsync(1000);
     await vi.advanceTimersByTimeAsync(2000);
 
-    await expect(promise).rejects.toBeInstanceOf(OpenAiTimeoutError);
+    await assertion;
     expect(mockCreate).toHaveBeenCalledTimes(3);
 
     vi.useRealTimers();
@@ -171,6 +191,8 @@ describe('withRetry — retry behavior (AI-03, AI-04)', () => {
     mockCreate.mockRejectedValue(timeoutError);
 
     const promise = rewriteBullet(BULLET_FIXTURE, 'jd', []);
+    // Attach rejection handler immediately to prevent unhandled rejection
+    const assertion = expect(promise).rejects.toBeInstanceOf(OpenAiTimeoutError);
 
     // After attempt 1 fails, should wait 1000ms
     // Only 1 call so far at this point
@@ -191,7 +213,7 @@ describe('withRetry — retry behavior (AI-03, AI-04)', () => {
     expect(mockCreate).toHaveBeenCalledTimes(3);
 
     // Now the final attempt fails and throws
-    await expect(promise).rejects.toBeInstanceOf(OpenAiTimeoutError);
+    await assertion;
 
     vi.useRealTimers();
   });
