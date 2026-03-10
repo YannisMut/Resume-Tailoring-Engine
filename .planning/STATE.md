@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-stopped_at: Completed 03-analysis Plan 01 — Wave 0 test contracts written in RED state
-last_updated: "2026-03-10T22:59:04.544Z"
+status: executing
+stopped_at: Completed 03-analysis Plan 02 — analysis service implemented, all 9 unit tests GREEN
+last_updated: "2026-03-10T23:01:56.114Z"
 last_activity: "2026-03-10 — Plan 03-01 complete: JdTooLongError added, RED test contracts written for analysis service and route"
 progress:
   total_phases: 7
   completed_phases: 2
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 85
 ---
 
@@ -59,6 +59,7 @@ Progress: [█████████░] 85%
 | Phase 02-pdf-parsing P04 | 12 | 2 tasks | 2 files |
 | Phase 02-pdf-parsing P05 | 4 | 1 tasks | 4 files |
 | Phase 03-analysis P01 | 5 | 3 tasks | 3 files |
+| Phase 03-analysis P02 | 3 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,8 @@ Recent decisions affecting current work:
 - [Phase 02-pdf-parsing]: analyzeRouter uses spread uploadMiddleware array for composability; integration tests mock parsePdf module for encrypted/scanned error control
 - [Phase 03-analysis]: JdTooLongError uses status 400 and code jd_too_long — distinct from 422 PDF parse errors, simplifies frontend error handling
 - [Phase 03-analysis]: RED-first TDD for analysis service: unit tests written before service file exists — import failure is the RED state, confirms tests are real contracts
+- [Phase 03-analysis]: analyzeResume is synchronous — await on a plain value is a no-op so the sync implementation satisfies the async test pattern
+- [Phase 03-analysis]: JD tokens deduplicated via Set before gap computation — guarantees gaps has no duplicates without a separate dedup pass
 
 ### Pending Todos
 
@@ -104,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T22:59:04.542Z
-Stopped at: Completed 03-analysis Plan 01 — Wave 0 test contracts written in RED state
+Last session: 2026-03-10T23:01:56.111Z
+Stopped at: Completed 03-analysis Plan 02 — analysis service implemented, all 9 unit tests GREEN
 Resume file: None
