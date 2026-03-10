@@ -23,6 +23,6 @@ analyzeRouter.post('/analyze', ...uploadMiddleware, async (req, res) => {
   }
 
   const resume = await parsePdf(req.file!.buffer);
-  const result = analyzeResume(resume, parsed.data.jobDescription);
+  const result = await analyzeResume(resume, parsed.data.jobDescription);
   res.json(result);
 });

@@ -1,4 +1,5 @@
 import type { ResumeStructure, AnalysisResult } from '@resume/types';
+import { rewriteAllBullets } from './ai.service.js';
 
 const STOP_WORDS = new Set([
   'a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
@@ -42,11 +43,15 @@ export function extractResumeTokens(resume: ResumeStructure): Set<string> {
   return new Set(texts.flatMap(tokenize));
 }
 
-export function analyzeResume(resume: ResumeStructure, jobDescription: string): AnalysisResult {
+export async function analyzeResume(
+  resume: ResumeStructure,
+  jobDescription: string,
+): Promise<AnalysisResult> {
   const resumeTokens = extractResumeTokens(resume);
   const jdTokens = Array.from(new Set(tokenize(jobDescription)));
   const matched = jdTokens.filter((t) => resumeTokens.has(t));
   const score = jdTokens.length === 0 ? 0 : Math.round((matched.length / jdTokens.length) * 100);
   const gaps = jdTokens.filter((t) => !resumeTokens.has(t));
-  return { score, gaps, rewrites: [], resumeStructure: resume };
+  const rewrites = await rewriteAllBullets(resume, jobDescription, gaps);
+  return { score, gaps, rewrites, resumeStructure: resume };
 }
