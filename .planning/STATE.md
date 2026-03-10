@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 02-pdf-parsing Plan 05 — POST /api/analyze route wired with supertest integration tests — awaiting human-verify checkpoint
-last_updated: "2026-03-10T19:04:15.492Z"
-last_activity: "2026-03-08 — Plan 01-05 complete: Phase 1 end-to-end verification GREEN, both apps start, all tests pass, Phase 2 unblocked"
+status: in_progress
+stopped_at: Completed 03-analysis Plan 01 — Wave 0 test contracts written in RED state
+last_updated: "2026-03-10T22:59:04.544Z"
+last_activity: "2026-03-10 — Plan 03-01 complete: JdTooLongError added, RED test contracts written for analysis service and route"
 progress:
   total_phases: 7
   completed_phases: 2
-  total_plans: 10
-  completed_plans: 10
-  percent: 100
+  total_plans: 13
+  completed_plans: 11
+  percent: 85
 ---
 
 # Project State
@@ -21,16 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-08)
 
 **Core value:** User uploads resume PDF + job description and gets back a layout-identical DOCX with AI-rewritten bullets — ready to submit, not just suggestions.
-**Current focus:** Phase 2 — PDF Parsing
+**Current focus:** Phase 3 — Analysis
 
 ## Current Position
 
-Phase: 2 of 7 (PDF Parsing)
-Plan: 0 of ? in current phase
-Status: Phase 1 complete — ready for Phase 2
-Last activity: 2026-03-08 — Plan 01-05 complete: Phase 1 end-to-end verification GREEN, both apps start, all tests pass, Phase 2 unblocked
+Phase: 3 of 7 (Analysis)
+Plan: 1 of 4 in current phase (03-01 complete)
+Status: Phase 3 in progress — Wave 0 RED tests written, ready for Plan 03-02 (analysis service implementation)
+Last activity: 2026-03-10 — Plan 03-01 complete: JdTooLongError added, RED test contracts written for analysis service and route
 
-Progress: [██████████] 100%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
@@ -58,6 +58,7 @@ Progress: [██████████] 100%
 | Phase 02-pdf-parsing P03 | 2 | 1 tasks | 2 files |
 | Phase 02-pdf-parsing P04 | 12 | 2 tasks | 2 files |
 | Phase 02-pdf-parsing P05 | 4 | 1 tasks | 4 files |
+| Phase 03-analysis P01 | 5 | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -88,6 +89,8 @@ Recent decisions affecting current work:
 - [Phase 02-pdf-parsing]: Font fallback uses literal FONT_FALLBACK constants (Calibri/22/false/false/#000000) when fontName absent — not the item's actual height
 - [Phase 02-pdf-parsing]: Test module isolation: static parsePdf import at top level (no vi.resetModules per test) to prevent instanceof failures across module reload boundaries
 - [Phase 02-pdf-parsing]: analyzeRouter uses spread uploadMiddleware array for composability; integration tests mock parsePdf module for encrypted/scanned error control
+- [Phase 03-analysis]: JdTooLongError uses status 400 and code jd_too_long — distinct from 422 PDF parse errors, simplifies frontend error handling
+- [Phase 03-analysis]: RED-first TDD for analysis service: unit tests written before service file exists — import failure is the RED state, confirms tests are real contracts
 
 ### Pending Todos
 
@@ -101,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T17:41:24.164Z
-Stopped at: Completed 02-pdf-parsing Plan 05 — POST /api/analyze route wired with supertest integration tests — awaiting human-verify checkpoint
+Last session: 2026-03-10T22:59:04.542Z
+Stopped at: Completed 03-analysis Plan 01 — Wave 0 test contracts written in RED state
 Resume file: None

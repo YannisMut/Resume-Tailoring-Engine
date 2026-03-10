@@ -16,9 +16,9 @@
 
 ### Analysis
 
-- [ ] **ANAL-01**: System computes a keyword alignment score (0–100) between resume and job description, labeled as "match score" — not "ATS score"
-- [ ] **ANAL-02**: System produces a keyword gap list showing terms present in the JD but absent in the resume
-- [ ] **ANAL-03**: System limits job description input to 5,000 characters to prevent token overflow
+- [x] **ANAL-01**: System computes a keyword alignment score (0–100) between resume and job description, labeled as "match score" — not "ATS score"
+- [x] **ANAL-02**: System produces a keyword gap list showing terms present in the JD but absent in the resume
+- [x] **ANAL-03**: System limits job description input to 5,000 characters to prevent token overflow
 
 ### AI Rewrites
 
@@ -86,9 +86,9 @@
 | INPUT-04 | Phase 2 | Complete |
 | INPUT-05 | Phase 2 | Complete |
 | INPUT-06 | Phase 6 | Pending |
-| ANAL-01 | Phase 3 | Pending |
-| ANAL-02 | Phase 3 | Pending |
-| ANAL-03 | Phase 3 | Pending |
+| ANAL-01 | Phase 3 | Complete |
+| ANAL-02 | Phase 3 | Complete |
+| ANAL-03 | Phase 3 | Complete |
 | AI-01 | Phase 4 | Pending |
 | AI-02 | Phase 4 | Pending |
 | AI-03 | Phase 4 | Pending |
