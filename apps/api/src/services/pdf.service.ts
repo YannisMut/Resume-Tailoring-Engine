@@ -25,7 +25,9 @@ let pdfjsPromise: Promise<typeof import('pdfjs-dist/legacy/build/pdf.mjs')> | nu
 function getPdfjs() {
   if (!pdfjsPromise) {
     pdfjsPromise = import('pdfjs-dist/legacy/build/pdf.mjs').then((mod) => {
-      const req = createRequire(import.meta.url);
+      // process.cwd() works in both CJS (tsx) and ESM — avoids import.meta.url
+      // which causes TS1470 when TypeScript targets CJS output
+      const req = createRequire(process.cwd() + '/package.json');
       mod.GlobalWorkerOptions.workerSrc = req.resolve(
         'pdfjs-dist/legacy/build/pdf.worker.mjs',
       );
@@ -182,6 +184,18 @@ function slugify(text: string): string {
 }
 
 /**
+ * Fallback heading detector for resumes where section headings use the same
+ * font size as body text (distinguished only by bold + ALL CAPS).
+ * Matches short all-uppercase lines like "EDUCATION" or "WORK EXPERIENCE".
+ */
+function isAllCapsHeading(text: string): boolean {
+  const t = text.trim();
+  if (t.length === 0 || t.length > 50) return false;
+  // Must be all uppercase letters/spaces/ampersands — no lowercase allowed
+  return /^[A-Z][A-Z\s&/\-]+$/.test(t) && /[A-Z]{3,}/.test(t);
+}
+
+/**
  * Main PDF parsing function.
  *
  * @param buffer - Raw PDF file bytes
@@ -297,17 +311,22 @@ export async function parsePdf(buffer: Buffer): Promise<ResumeStructure> {
     idx: number;
   } | null = null;
 
-  // Determine marginLeft using headings as the reference anchor.
-  // Section headings (e.g. "EXPERIENCE", "EDUCATION") are flush against the page margin,
-  // so their X position is the most reliable proxy for the left margin.
-  // This avoids the trap of using body/bullet text — which is typically indented.
+  // Determine heading detection strategy.
+  // If ALL size-based candidates are non-all-caps (e.g. only the resume owner's name
+  // is larger), the actual section headings must be same-size bold/caps. In that case,
+  // add all-caps detection alongside size-based so "EDUCATION" etc. are found.
+  const sizeBasedHeadings = allLines.filter((l) => l.maxHeight >= headingThreshold);
+  const allSizeHeadingsAreNonCaps = sizeBasedHeadings.every((l) => !isAllCapsHeading(l.text));
+  const useAllCaps = allSizeHeadingsAreNonCaps;
+
   const headingXValues = allLines
-    .filter((l) => l.maxHeight >= headingThreshold)
+    .filter((l) => l.maxHeight >= headingThreshold || (useAllCaps && isAllCapsHeading(l.text)))
     .map((l) => l.minX);
   const marginLeft = headingXValues.length > 0 ? Math.min(...headingXValues) : 72;
 
   for (const line of allLines) {
-    const isHeading = line.maxHeight >= headingThreshold;
+    const isHeading =
+      line.maxHeight >= headingThreshold || (useAllCaps && isAllCapsHeading(line.text));
 
     if (!foundFirstHeading) {
       if (isHeading) {
@@ -353,7 +372,7 @@ export async function parsePdf(buffer: Buffer): Promise<ResumeStructure> {
   }
 
   // --- Step 10: Minimum viable check ---
-  const hasBullets = sections.some((s) => s.items.some((item) => item.bullets.length > 0));
+const hasBullets = sections.some((s) => s.items.some((item) => item.bullets.length > 0));
   if (sections.length === 0 || !hasBullets) {
     throw new PdfCorruptError(
       'This PDF does not appear to be a standard resume — no sections with bullet points were found.',
