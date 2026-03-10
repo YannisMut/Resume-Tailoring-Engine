@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-10T01:21:57.503Z"
+stopped_at: Completed 02-pdf-parsing Plan 01 — header field added to ResumeStructureSchema
+last_updated: "2026-03-10T01:56:54.341Z"
 last_activity: "2026-03-08 — Plan 01-05 complete: Phase 1 end-to-end verification GREEN, both apps start, all tests pass, Phase 2 unblocked"
 progress:
   total_phases: 7
   completed_phases: 1
-  total_plans: 5
-  completed_plans: 5
+  total_plans: 10
+  completed_plans: 6
   percent: 100
 ---
 
@@ -53,6 +53,7 @@ Progress: [██████████] 100%
 | Phase 01-foundation P03 | 5 | 2 tasks | 3 files |
 | Phase 01-foundation P04 | 5 | 2 tasks | 5 files |
 | Phase 01-foundation P05 | 5 | 2 tasks | 0 files |
+| Phase 02-pdf-parsing P01 | 2 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,7 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: AppError subclasses define error contract before all service implementation — PdfParseError(422) and OpenAiTimeoutError(504/retryable) cover Phase 2 and 3 failure modes
 - [Phase 01-foundation]: apps/web tsconfig overrides module/moduleResolution to ESNext/bundler — Next.js internal type declarations incompatible with NodeNext resolution in tsconfig.base.json
 - [Phase 01-foundation]: transpilePackages: ['@resume/types'] in next.config.ts required because packages/types exports TS source directly with no build step
+- [Phase 02-pdf-parsing]: header field is required (not optional) on ResumeStructureSchema — empty array valid for resumes with no detected header block, but field must always be populated so Plan 02-04 always writes it
 
 ### Pending Todos
 
@@ -88,6 +90,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T01:21:57.491Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-pdf-parsing/02-CONTEXT.md
+Last session: 2026-03-10T01:56:54.338Z
+Stopped at: Completed 02-pdf-parsing Plan 01 — header field added to ResumeStructureSchema
+Resume file: None

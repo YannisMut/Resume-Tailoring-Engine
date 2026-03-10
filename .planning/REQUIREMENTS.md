@@ -7,7 +7,7 @@
 
 ### File Input
 
-- [ ] **INPUT-01**: User can upload a resume PDF via file picker
+- [x] **INPUT-01**: User can upload a resume PDF via file picker
 - [ ] **INPUT-02**: System rejects non-PDF files with a clear error message before processing
 - [ ] **INPUT-03**: System rejects files over 10MB with a clear error message before processing
 - [ ] **INPUT-04**: System detects scanned/image-only PDFs and shows a helpful error (no text content to extract)
@@ -80,7 +80,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INPUT-01 | Phase 2 | Pending |
+| INPUT-01 | Phase 2 | Complete |
 | INPUT-02 | Phase 2 | Pending |
 | INPUT-03 | Phase 2 | Pending |
 | INPUT-04 | Phase 2 | Pending |
