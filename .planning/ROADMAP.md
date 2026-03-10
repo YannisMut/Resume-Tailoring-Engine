@@ -51,7 +51,14 @@ Plans:
   3. Files over 10MB are rejected before processing with a message identifying the problem
   4. Scanned/image-only PDFs (no extractable text) are rejected with a message explaining why they cannot be processed
   5. Password-protected PDFs are rejected with a clear error message
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — ResumeStructureSchema: add header field (HeaderLine[] with TextStyle)
+- [ ] 02-02-PLAN.md — Error classes: 5 differentiated PDF error codes (pdf_not_pdf, pdf_too_large, pdf_scanned, pdf_encrypted, pdf_corrupt)
+- [ ] 02-03-PLAN.md — Upload middleware: multer memoryStorage + magic bytes validator (INPUT-02, INPUT-03)
+- [ ] 02-04-PLAN.md — pdf.service.ts: pdfjs-dist Y-proximity clustering + ResumeStructure extraction (INPUT-01, INPUT-04, INPUT-05)
+- [ ] 02-05-PLAN.md — POST /api/analyze route: wire all components + integration tests + human verify
 
 ### Phase 3: Analysis
 **Goal**: The system computes a meaningful keyword match score and gap list from resume content and job description
@@ -116,7 +123,7 @@ Note: Phase 5 can be developed in parallel with Phase 4 (both depend on Phase 2 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 5/5 | Complete   | 2026-03-09 |
-| 2. PDF Parsing | 0/TBD | Not started | - |
+| 2. PDF Parsing | 0/5 | Not started | - |
 | 3. Analysis | 0/TBD | Not started | - |
 | 4. AI Rewrites | 0/TBD | Not started | - |
 | 5. DOCX Generation | 0/TBD | Not started | - |
