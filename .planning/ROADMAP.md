@@ -68,7 +68,12 @@ Plans:
   1. User sees a match score between 0 and 100 labeled as "keyword alignment" (not "ATS score")
   2. User sees a list of keywords present in the job description but absent from the resume
   3. Job descriptions longer than 5,000 characters are rejected or truncated with a visible message before analysis runs
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Wave 0 test infrastructure: JdTooLongError class + RED unit and integration tests
+- [ ] 03-02-PLAN.md — analysis.service.ts: pure tokenize/extractResumeTokens/analyzeResume implementation (unit tests GREEN)
+- [ ] 03-03-PLAN.md — Update POST /api/analyze: JD validation + analyzeResume wired + full suite GREEN
 
 ### Phase 4: AI Rewrites
 **Goal**: All resume bullets are rewritten by GPT-4o to improve keyword alignment without inventing false claims, and failures are recoverable without re-uploading
@@ -124,7 +129,7 @@ Note: Phase 5 can be developed in parallel with Phase 4 (both depend on Phase 2 
 |-------|----------------|--------|-----------|
 | 1. Foundation | 5/5 | Complete   | 2026-03-09 |
 | 2. PDF Parsing | 5/5 | Complete   | 2026-03-10 |
-| 3. Analysis | 0/TBD | Not started | - |
+| 3. Analysis | 0/3 | Not started | - |
 | 4. AI Rewrites | 0/TBD | Not started | - |
 | 5. DOCX Generation | 0/TBD | Not started | - |
 | 6. Frontend Wizard | 0/TBD | Not started | - |
