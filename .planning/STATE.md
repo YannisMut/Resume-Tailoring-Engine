@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 02-pdf-parsing Plan 01 — header field added to ResumeStructureSchema
-last_updated: "2026-03-10T01:56:54.341Z"
+stopped_at: Completed 02-pdf-parsing Plan 02 — five differentiated PDF error classes added to error.middleware.ts
+last_updated: "2026-03-10T01:59:03.381Z"
 last_activity: "2026-03-08 — Plan 01-05 complete: Phase 1 end-to-end verification GREEN, both apps start, all tests pass, Phase 2 unblocked"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 10
-  completed_plans: 6
+  completed_plans: 7
   percent: 100
 ---
 
@@ -54,6 +54,7 @@ Progress: [██████████] 100%
 | Phase 01-foundation P04 | 5 | 2 tasks | 5 files |
 | Phase 01-foundation P05 | 5 | 2 tasks | 0 files |
 | Phase 02-pdf-parsing P01 | 2 | 1 tasks | 2 files |
+| Phase 02-pdf-parsing P02 | 2 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,7 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: apps/web tsconfig overrides module/moduleResolution to ESNext/bundler — Next.js internal type declarations incompatible with NodeNext resolution in tsconfig.base.json
 - [Phase 01-foundation]: transpilePackages: ['@resume/types'] in next.config.ts required because packages/types exports TS source directly with no build step
 - [Phase 02-pdf-parsing]: header field is required (not optional) on ResumeStructureSchema — empty array valid for resumes with no detected header block, but field must always be populated so Plan 02-04 always writes it
+- [Phase 02-pdf-parsing]: Five distinct PDF error codes locked (pdf_not_pdf 415, pdf_too_large 413, pdf_scanned/pdf_encrypted/pdf_corrupt 422) — frontend wizard depends on exact codes for targeted help messages
 
 ### Pending Todos
 
@@ -90,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T01:56:54.338Z
-Stopped at: Completed 02-pdf-parsing Plan 01 — header field added to ResumeStructureSchema
+Last session: 2026-03-10T01:59:03.379Z
+Stopped at: Completed 02-pdf-parsing Plan 02 — five differentiated PDF error classes added to error.middleware.ts
 Resume file: None

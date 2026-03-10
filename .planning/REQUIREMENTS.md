@@ -8,10 +8,10 @@
 ### File Input
 
 - [x] **INPUT-01**: User can upload a resume PDF via file picker
-- [ ] **INPUT-02**: System rejects non-PDF files with a clear error message before processing
-- [ ] **INPUT-03**: System rejects files over 10MB with a clear error message before processing
-- [ ] **INPUT-04**: System detects scanned/image-only PDFs and shows a helpful error (no text content to extract)
-- [ ] **INPUT-05**: System detects and rejects password-protected PDFs with a clear error message
+- [x] **INPUT-02**: System rejects non-PDF files with a clear error message before processing
+- [x] **INPUT-03**: System rejects files over 10MB with a clear error message before processing
+- [x] **INPUT-04**: System detects scanned/image-only PDFs and shows a helpful error (no text content to extract)
+- [x] **INPUT-05**: System detects and rejects password-protected PDFs with a clear error message
 - [ ] **INPUT-06**: User can paste or type a job description into a plain textarea
 
 ### Analysis
@@ -81,10 +81,10 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | INPUT-01 | Phase 2 | Complete |
-| INPUT-02 | Phase 2 | Pending |
-| INPUT-03 | Phase 2 | Pending |
-| INPUT-04 | Phase 2 | Pending |
-| INPUT-05 | Phase 2 | Pending |
+| INPUT-02 | Phase 2 | Complete |
+| INPUT-03 | Phase 2 | Complete |
+| INPUT-04 | Phase 2 | Complete |
+| INPUT-05 | Phase 2 | Complete |
 | INPUT-06 | Phase 6 | Pending |
 | ANAL-01 | Phase 3 | Pending |
 | ANAL-02 | Phase 3 | Pending |
