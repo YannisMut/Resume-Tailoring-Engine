@@ -15,9 +15,11 @@ import {
 } from '../middleware/error.middleware.js';
 import { ResumeStructureSchema } from '@resume/types';
 import type { ResumeStructure, HeaderLine, TextStyle, Section, SectionItem } from '@resume/types';
+import { createRequire } from 'node:module';
 
-// Disable worker thread — not needed in Node.js
-GlobalWorkerOptions.workerSrc = '';
+// Point pdfjs to the bundled worker — required in Node.js with pdfjs-dist v5
+const require = createRequire(import.meta.url);
+GlobalWorkerOptions.workerSrc = require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs');
 
 // Y-coordinate proximity tolerance: items within this many points share a logical line
 const LINE_Y_TOLERANCE = 2.0;
