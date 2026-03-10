@@ -13,7 +13,7 @@ Seven phases deliver the complete pipeline: a shared type foundation gates every
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - Monorepo scaffold, shared types (ResumeStructure), and Express/Next.js app shells (completed 2026-03-09)
-- [ ] **Phase 2: PDF Parsing** - Parse resume PDFs into ResumeStructure with spatial layout metadata; validate all bad-input cases
+- [x] **Phase 2: PDF Parsing** - Parse resume PDFs into ResumeStructure with spatial layout metadata; validate all bad-input cases (completed 2026-03-10)
 - [ ] **Phase 3: Analysis** - Compute keyword match score and gap list algorithmically; enforce JD input constraints
 - [ ] **Phase 4: AI Rewrites** - Rewrite bullets with GPT-4o using constrained prompts; handle retries and timeout recovery
 - [ ] **Phase 5: DOCX Generation** - Reconstruct layout-faithful DOCX from approved bullets and ResumeStructure
@@ -123,7 +123,7 @@ Note: Phase 5 can be developed in parallel with Phase 4 (both depend on Phase 2 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 5/5 | Complete   | 2026-03-09 |
-| 2. PDF Parsing | 4/5 | In Progress|  |
+| 2. PDF Parsing | 5/5 | Complete   | 2026-03-10 |
 | 3. Analysis | 0/TBD | Not started | - |
 | 4. AI Rewrites | 0/TBD | Not started | - |
 | 5. DOCX Generation | 0/TBD | Not started | - |

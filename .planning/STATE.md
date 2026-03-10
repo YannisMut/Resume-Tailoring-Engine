@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 02-pdf-parsing Plan 04 — parsePdf service with Y-proximity clustering and Zod-validated ResumeStructure
-last_updated: "2026-03-10T17:37:55.061Z"
+stopped_at: Completed 02-pdf-parsing Plan 05 — POST /api/analyze route wired with supertest integration tests — awaiting human-verify checkpoint
+last_updated: "2026-03-10T17:41:24.166Z"
 last_activity: "2026-03-08 — Plan 01-05 complete: Phase 1 end-to-end verification GREEN, both apps start, all tests pass, Phase 2 unblocked"
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 100
 ---
 
@@ -57,6 +57,7 @@ Progress: [██████████] 100%
 | Phase 02-pdf-parsing P02 | 2 | 1 tasks | 2 files |
 | Phase 02-pdf-parsing P03 | 2 | 1 tasks | 2 files |
 | Phase 02-pdf-parsing P04 | 12 | 2 tasks | 2 files |
+| Phase 02-pdf-parsing P05 | 4 | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,7 @@ Recent decisions affecting current work:
 - [Phase 02-pdf-parsing]: marginLeft anchored to heading X positions (not body text) because headings are flush to the left margin while bullets are indented
 - [Phase 02-pdf-parsing]: Font fallback uses literal FONT_FALLBACK constants (Calibri/22/false/false/#000000) when fontName absent — not the item's actual height
 - [Phase 02-pdf-parsing]: Test module isolation: static parsePdf import at top level (no vi.resetModules per test) to prevent instanceof failures across module reload boundaries
+- [Phase 02-pdf-parsing]: analyzeRouter uses spread uploadMiddleware array for composability; integration tests mock parsePdf module for encrypted/scanned error control
 
 ### Pending Todos
 
@@ -99,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T17:37:55.058Z
-Stopped at: Completed 02-pdf-parsing Plan 04 — parsePdf service with Y-proximity clustering and Zod-validated ResumeStructure
+Last session: 2026-03-10T17:41:24.164Z
+Stopped at: Completed 02-pdf-parsing Plan 05 — POST /api/analyze route wired with supertest integration tests — awaiting human-verify checkpoint
 Resume file: None
