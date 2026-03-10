@@ -18,6 +18,36 @@ export class PdfParseError extends AppError {
   }
 }
 
+export class PdfNotPdfError extends AppError {
+  constructor(message: string) {
+    super(415, 'pdf_not_pdf', message);
+  }
+}
+
+export class PdfTooLargeError extends AppError {
+  constructor(message: string) {
+    super(413, 'pdf_too_large', message);
+  }
+}
+
+export class PdfScannedError extends AppError {
+  constructor(message: string) {
+    super(422, 'pdf_scanned', message);
+  }
+}
+
+export class PdfEncryptedError extends AppError {
+  constructor(message: string) {
+    super(422, 'pdf_encrypted', message);
+  }
+}
+
+export class PdfCorruptError extends AppError {
+  constructor(message: string) {
+    super(422, 'pdf_corrupt', message);
+  }
+}
+
 export class OpenAiTimeoutError extends AppError {
   constructor() {
     super(504, 'ai_timeout', 'AI service timed out. Your analysis is preserved — try again.', true);

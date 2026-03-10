@@ -7,6 +7,11 @@ import {
   AppError,
   PdfParseError,
   OpenAiTimeoutError,
+  PdfNotPdfError,
+  PdfTooLargeError,
+  PdfScannedError,
+  PdfEncryptedError,
+  PdfCorruptError,
 } from '../middleware/error.middleware';
 
 function makeMockRes() {
@@ -56,5 +61,42 @@ describe('errorMiddleware', () => {
     const err = new AppError(409, 'conflict', 'Resource already exists');
     errorMiddleware(err, mockReq, res, mockNext);
     expect(res.status).toHaveBeenCalledWith(409);
+  });
+});
+
+describe('PDF-specific error classes', () => {
+  it('PdfNotPdfError has statusCode 415 and code pdf_not_pdf', () => {
+    const err = new PdfNotPdfError('File is not a PDF');
+    expect(err.statusCode).toBe(415);
+    expect(err.code).toBe('pdf_not_pdf');
+    expect(err.message).toBe('File is not a PDF');
+  });
+
+  it('PdfTooLargeError has statusCode 413 and code pdf_too_large', () => {
+    const err = new PdfTooLargeError('File exceeds 10MB limit');
+    expect(err.statusCode).toBe(413);
+    expect(err.code).toBe('pdf_too_large');
+    expect(err.message).toBe('File exceeds 10MB limit');
+  });
+
+  it('PdfScannedError has statusCode 422 and code pdf_scanned', () => {
+    const err = new PdfScannedError('PDF appears to be scanned image only');
+    expect(err.statusCode).toBe(422);
+    expect(err.code).toBe('pdf_scanned');
+    expect(err.message).toBe('PDF appears to be scanned image only');
+  });
+
+  it('PdfEncryptedError has statusCode 422 and code pdf_encrypted', () => {
+    const err = new PdfEncryptedError('PDF is password-protected');
+    expect(err.statusCode).toBe(422);
+    expect(err.code).toBe('pdf_encrypted');
+    expect(err.message).toBe('PDF is password-protected');
+  });
+
+  it('PdfCorruptError has statusCode 422 and code pdf_corrupt', () => {
+    const err = new PdfCorruptError('PDF is corrupt or unreadable');
+    expect(err.statusCode).toBe(422);
+    expect(err.code).toBe('pdf_corrupt');
+    expect(err.message).toBe('PDF is corrupt or unreadable');
   });
 });
