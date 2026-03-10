@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 02-pdf-parsing Plan 03 — upload middleware with multer + magic bytes validation
-last_updated: "2026-03-10T02:02:50.386Z"
+stopped_at: Completed 02-pdf-parsing Plan 04 — parsePdf service with Y-proximity clustering and Zod-validated ResumeStructure
+last_updated: "2026-03-10T17:37:55.061Z"
 last_activity: "2026-03-08 — Plan 01-05 complete: Phase 1 end-to-end verification GREEN, both apps start, all tests pass, Phase 2 unblocked"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 100
 ---
 
@@ -56,6 +56,7 @@ Progress: [██████████] 100%
 | Phase 02-pdf-parsing P01 | 2 | 1 tasks | 2 files |
 | Phase 02-pdf-parsing P02 | 2 | 1 tasks | 2 files |
 | Phase 02-pdf-parsing P03 | 2 | 1 tasks | 2 files |
+| Phase 02-pdf-parsing P04 | 12 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,9 @@ Recent decisions affecting current work:
 - [Phase 02-pdf-parsing]: Five distinct PDF error codes locked (pdf_not_pdf 415, pdf_too_large 413, pdf_scanned/pdf_encrypted/pdf_corrupt 422) — frontend wizard depends on exact codes for targeted help messages
 - [Phase 02-pdf-parsing]: uploadMiddleware is a RequestHandler[] array (not a single handler) — consumers spread it into routes for maximum composability
 - [Phase 02-pdf-parsing]: Magic bytes check is a separate post-multer handler because req.file.buffer is only available after multer processes the upload — fileFilter cannot check magic bytes
+- [Phase 02-pdf-parsing]: marginLeft anchored to heading X positions (not body text) because headings are flush to the left margin while bullets are indented
+- [Phase 02-pdf-parsing]: Font fallback uses literal FONT_FALLBACK constants (Calibri/22/false/false/#000000) when fontName absent — not the item's actual height
+- [Phase 02-pdf-parsing]: Test module isolation: static parsePdf import at top level (no vi.resetModules per test) to prevent instanceof failures across module reload boundaries
 
 ### Pending Todos
 
@@ -95,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T02:02:50.383Z
-Stopped at: Completed 02-pdf-parsing Plan 03 — upload middleware with multer + magic bytes validation
+Last session: 2026-03-10T17:37:55.058Z
+Stopped at: Completed 02-pdf-parsing Plan 04 — parsePdf service with Y-proximity clustering and Zod-validated ResumeStructure
 Resume file: None
