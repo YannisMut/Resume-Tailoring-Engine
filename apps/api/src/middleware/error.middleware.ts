@@ -54,6 +54,12 @@ export class OpenAiTimeoutError extends AppError {
   }
 }
 
+export class JdTooLongError extends AppError {
+  constructor(message: string) {
+    super(400, 'jd_too_long', message);
+  }
+}
+
 export function errorMiddleware(
   err: Error,
   _req: Request,
