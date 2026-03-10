@@ -20,6 +20,7 @@ vi.mock('pdfjs-dist/legacy/build/pdf.mjs', () => {
 });
 
 import * as pdfjsMock from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { parsePdf } from '../services/pdf.service.js';
 
 // PasswordException is not exported from pdfjs-dist — simulate by crafting an error
 // with name='PasswordException', matching what pdfjs internally throws.
@@ -65,8 +66,6 @@ function makeMockDoc(pages: ReturnType<typeof makeMockPage>[]) {
 describe('parsePdf', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Clear module cache so each test gets a fresh import
-    vi.resetModules();
   });
 
   it('throws PdfEncryptedError (code pdf_encrypted, status 422) for a password-protected PDF', async () => {
@@ -75,7 +74,6 @@ describe('parsePdf', () => {
       promise: Promise.reject(passwordErr),
     });
 
-    const { parsePdf } = await import('../services/pdf.service.js');
     try {
       await parsePdf(Buffer.from('fake'));
       expect.fail('should have thrown');
@@ -92,7 +90,6 @@ describe('parsePdf', () => {
       promise: Promise.reject(corruptErr),
     });
 
-    const { parsePdf } = await import('../services/pdf.service.js');
     try {
       await parsePdf(Buffer.from('fake'));
       expect.fail('should have thrown');
@@ -110,7 +107,6 @@ describe('parsePdf', () => {
       promise: Promise.resolve(mockDoc),
     });
 
-    const { parsePdf } = await import('../services/pdf.service.js');
     try {
       await parsePdf(Buffer.from('fake'));
       expect.fail('should have thrown');
@@ -137,13 +133,12 @@ describe('parsePdf', () => {
       promise: Promise.resolve(mockDoc),
     });
 
-    const { parsePdf } = await import('../services/pdf.service.js');
     const result = await parsePdf(Buffer.from('fake'));
 
     expect(result.sections).toHaveLength(1);
-    expect(result.sections[0].heading).toBe('EXPERIENCE');
+    expect(result.sections[0]?.heading).toBe('EXPERIENCE');
     expect(result.header.length).toBeGreaterThanOrEqual(1);
-    expect(result.header[0].text).toBe('John Doe');
+    expect(result.header[0]?.text).toBe('John Doe');
   });
 
   it('uses font fallback (Calibri/22 half-pts/false/false/#000000) when fontName is missing', async () => {
@@ -159,16 +154,15 @@ describe('parsePdf', () => {
       promise: Promise.resolve(mockDoc),
     });
 
-    const { parsePdf } = await import('../services/pdf.service.js');
     const result = await parsePdf(Buffer.from('fake'));
 
     // Parsing must succeed — fallback is applied, not an error
     expect(result).toBeDefined();
-    expect(result.header[0].style.fontName).toBe('Calibri');
-    expect(result.header[0].style.fontSize).toBe(22);
-    expect(result.header[0].style.bold).toBe(false);
-    expect(result.header[0].style.italic).toBe(false);
-    expect(result.header[0].style.color).toBe('#000000');
+    expect(result.header[0]?.style.fontName).toBe('Calibri');
+    expect(result.header[0]?.style.fontSize).toBe(22);
+    expect(result.header[0]?.style.bold).toBe(false);
+    expect(result.header[0]?.style.italic).toBe(false);
+    expect(result.header[0]?.style.color).toBe('#000000');
   });
 
   it('throws PdfCorruptError when PDF has text but no section has any bullets', async () => {
@@ -185,7 +179,6 @@ describe('parsePdf', () => {
       promise: Promise.resolve(mockDoc),
     });
 
-    const { parsePdf } = await import('../services/pdf.service.js');
     try {
       await parsePdf(Buffer.from('fake'));
       expect.fail('should have thrown');
