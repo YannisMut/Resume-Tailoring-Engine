@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 02-pdf-parsing Plan 02 — five differentiated PDF error classes added to error.middleware.ts
-last_updated: "2026-03-10T01:59:03.381Z"
+stopped_at: Completed 02-pdf-parsing Plan 03 — upload middleware with multer + magic bytes validation
+last_updated: "2026-03-10T02:02:50.386Z"
 last_activity: "2026-03-08 — Plan 01-05 complete: Phase 1 end-to-end verification GREEN, both apps start, all tests pass, Phase 2 unblocked"
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 8
   percent: 100
 ---
 
@@ -55,6 +55,7 @@ Progress: [██████████] 100%
 | Phase 01-foundation P05 | 5 | 2 tasks | 0 files |
 | Phase 02-pdf-parsing P01 | 2 | 1 tasks | 2 files |
 | Phase 02-pdf-parsing P02 | 2 | 1 tasks | 2 files |
+| Phase 02-pdf-parsing P03 | 2 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: transpilePackages: ['@resume/types'] in next.config.ts required because packages/types exports TS source directly with no build step
 - [Phase 02-pdf-parsing]: header field is required (not optional) on ResumeStructureSchema — empty array valid for resumes with no detected header block, but field must always be populated so Plan 02-04 always writes it
 - [Phase 02-pdf-parsing]: Five distinct PDF error codes locked (pdf_not_pdf 415, pdf_too_large 413, pdf_scanned/pdf_encrypted/pdf_corrupt 422) — frontend wizard depends on exact codes for targeted help messages
+- [Phase 02-pdf-parsing]: uploadMiddleware is a RequestHandler[] array (not a single handler) — consumers spread it into routes for maximum composability
+- [Phase 02-pdf-parsing]: Magic bytes check is a separate post-multer handler because req.file.buffer is only available after multer processes the upload — fileFilter cannot check magic bytes
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T01:59:03.379Z
-Stopped at: Completed 02-pdf-parsing Plan 02 — five differentiated PDF error classes added to error.middleware.ts
+Last session: 2026-03-10T02:02:50.383Z
+Stopped at: Completed 02-pdf-parsing Plan 03 — upload middleware with multer + magic bytes validation
 Resume file: None
