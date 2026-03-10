@@ -84,7 +84,11 @@ Plans:
   2. Rewritten bullets do not introduce metrics, percentages, timeframes, or technologies not present in the original bullet
   3. Transient OpenAI failures retry automatically up to 3 times before surfacing an error
   4. When an OpenAI timeout occurs, the user sees a retry hint and the analysis state (score, gaps, existing rewrites) is preserved — no re-upload required
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — ai.service.ts: install openai, implement rewriteBullet/rewriteAllBullets/withRetry, unit tests GREEN (AI-01, AI-02, AI-03, AI-04)
+- [ ] 04-02-PLAN.md — Wire rewriteAllBullets into analyzeResume, add integration tests for rewrites shape and AI timeout 504
 
 ### Phase 5: DOCX Generation
 **Goal**: Users can download a DOCX that is visually indistinguishable from their original resume, using their approved bullets
@@ -130,7 +134,7 @@ Note: Phase 5 can be developed in parallel with Phase 4 (both depend on Phase 2 
 | 1. Foundation | 5/5 | Complete   | 2026-03-09 |
 | 2. PDF Parsing | 5/5 | Complete   | 2026-03-10 |
 | 3. Analysis | 3/3 | Complete    | 2026-03-10 |
-| 4. AI Rewrites | 0/TBD | Not started | - |
+| 4. AI Rewrites | 0/2 | Not started | - |
 | 5. DOCX Generation | 0/TBD | Not started | - |
 | 6. Frontend Wizard | 0/TBD | Not started | - |
 | 7. Polish | 0/TBD | Not started | - |
