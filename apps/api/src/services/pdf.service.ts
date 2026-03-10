@@ -7,7 +7,6 @@
  * assigns indent levels for bullets, and builds a validated ResumeStructure.
  */
 
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import {
   PdfEncryptedError,
   PdfScannedError,
@@ -17,9 +16,24 @@ import { ResumeStructureSchema } from '@resume/types';
 import type { ResumeStructure, HeaderLine, TextStyle, Section, SectionItem } from '@resume/types';
 import { createRequire } from 'node:module';
 
-// Point pdfjs to the bundled worker — required in Node.js with pdfjs-dist v5
-const require = createRequire(import.meta.url);
-GlobalWorkerOptions.workerSrc = require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs');
+// Lazy-load pdfjs via dynamic import() to get the real ESM module.
+// Static imports go through tsx's CJS transpilation, which creates a proxy
+// object — setting GlobalWorkerOptions on that proxy has no effect on the
+// real pdfjs internals. Dynamic import() always returns the true ESM namespace.
+let pdfjsPromise: Promise<typeof import('pdfjs-dist/legacy/build/pdf.mjs')> | null = null;
+
+function getPdfjs() {
+  if (!pdfjsPromise) {
+    pdfjsPromise = import('pdfjs-dist/legacy/build/pdf.mjs').then((mod) => {
+      const req = createRequire(import.meta.url);
+      mod.GlobalWorkerOptions.workerSrc = req.resolve(
+        'pdfjs-dist/legacy/build/pdf.worker.mjs',
+      );
+      return mod;
+    });
+  }
+  return pdfjsPromise;
+}
 
 // Y-coordinate proximity tolerance: items within this many points share a logical line
 const LINE_Y_TOLERANCE = 2.0;
@@ -178,6 +192,7 @@ function slugify(text: string): string {
  */
 export async function parsePdf(buffer: Buffer): Promise<ResumeStructure> {
   // --- Step 1: Load document ---
+  const { getDocument } = await getPdfjs();
   let pdfDoc: Awaited<ReturnType<typeof getDocument>['promise']>;
 
   try {
