@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-analysis Plan 03 — analyze route wired, all 41 tests GREEN, Phase 3 complete
-last_updated: "2026-03-10T23:06:47.088Z"
+stopped_at: Completed 04-ai-rewrites Plan 01 — ai.service.ts implemented, all 51 tests green
+last_updated: "2026-03-10T23:37:17.270Z"
 last_activity: "2026-03-10 — Plan 03-01 complete: JdTooLongError added, RED test contracts written for analysis service and route"
 progress:
   total_phases: 7
   completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 15
+  completed_plans: 14
   percent: 85
 ---
 
@@ -61,6 +61,7 @@ Progress: [█████████░] 85%
 | Phase 03-analysis P01 | 5 | 3 tasks | 3 files |
 | Phase 03-analysis P02 | 3 | 1 tasks | 1 files |
 | Phase 03-analysis P03 | 4 | 1 tasks | 2 files |
+| Phase 04-ai-rewrites P01 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,8 @@ Recent decisions affecting current work:
 - [Phase 03-analysis]: JD tokens deduplicated via Set before gap computation — guarantees gaps has no duplicates without a separate dedup pass
 - [Phase 03-analysis]: AnalyzeRequestSchema uses .trim().min(1).max(5000) — trim normalises whitespace before length check
 - [Phase 03-analysis]: 3 pre-existing route tests updated to include jobDescription and match new AnalysisResult shape — raw ResumeStructure response superseded by plan 03-01
+- [Phase 04-ai-rewrites]: isTransient() uses constructor.name not instanceof — avoids vi.mock boundary class reference mismatch
+- [Phase 04-ai-rewrites]: Fake timer tests attach expect().rejects before advancing timers to prevent unhandled rejection warnings
 
 ### Pending Todos
 
@@ -110,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T23:04:43.239Z
-Stopped at: Completed 03-analysis Plan 03 — analyze route wired, all 41 tests GREEN, Phase 3 complete
+Last session: 2026-03-10T23:37:17.268Z
+Stopped at: Completed 04-ai-rewrites Plan 01 — ai.service.ts implemented, all 51 tests green
 Resume file: None

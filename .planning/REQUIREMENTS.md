@@ -22,10 +22,10 @@
 
 ### AI Rewrites
 
-- [ ] **AI-01**: System rewrites all resume bullets using GPT-4o to improve keyword alignment with the job description
-- [ ] **AI-02**: AI rewrite prompt explicitly prohibits inventing metrics, percentages, timeframes, or technologies not present in the original bullet
-- [ ] **AI-03**: System retries failed OpenAI calls with exponential backoff (3 attempts) before surfacing an error
-- [ ] **AI-04**: System surfaces an OpenAI timeout as a retriable error with a user-facing retry hint; analysis state is preserved so the user does not need to re-upload
+- [x] **AI-01**: System rewrites all resume bullets using GPT-4o to improve keyword alignment with the job description
+- [x] **AI-02**: AI rewrite prompt explicitly prohibits inventing metrics, percentages, timeframes, or technologies not present in the original bullet
+- [x] **AI-03**: System retries failed OpenAI calls with exponential backoff (3 attempts) before surfacing an error
+- [x] **AI-04**: System surfaces an OpenAI timeout as a retriable error with a user-facing retry hint; analysis state is preserved so the user does not need to re-upload
 
 ### Review UI
 
@@ -89,10 +89,10 @@
 | ANAL-01 | Phase 3 | Complete |
 | ANAL-02 | Phase 3 | Complete |
 | ANAL-03 | Phase 3 | Complete |
-| AI-01 | Phase 4 | Pending |
-| AI-02 | Phase 4 | Pending |
-| AI-03 | Phase 4 | Pending |
-| AI-04 | Phase 4 | Pending |
+| AI-01 | Phase 4 | Complete |
+| AI-02 | Phase 4 | Complete |
+| AI-03 | Phase 4 | Complete |
+| AI-04 | Phase 4 | Complete |
 | REVIEW-01 | Phase 6 | Pending |
 | REVIEW-02 | Phase 6 | Pending |
 | REVIEW-03 | Phase 7 | Pending |
