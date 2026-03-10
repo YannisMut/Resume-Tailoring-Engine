@@ -33,6 +33,11 @@ export const SectionSchema = z.object({
   items: z.array(SectionItemSchema),
 });
 
+export const HeaderLineSchema = z.object({
+  text: z.string(),
+  style: TextStyleSchema,
+});
+
 export const ResumeStructureSchema = z.object({
   meta: z.object({
     pageWidth: z.number(),
@@ -43,10 +48,12 @@ export const ResumeStructureSchema = z.object({
     marginRight: z.number(),
   }),
   sections: z.array(SectionSchema),
+  header: z.array(HeaderLineSchema),
 });
 
 export type TextStyle = z.infer<typeof TextStyleSchema>;
 export type Bullet = z.infer<typeof BulletSchema>;
 export type SectionItem = z.infer<typeof SectionItemSchema>;
 export type Section = z.infer<typeof SectionSchema>;
+export type HeaderLine = z.infer<typeof HeaderLineSchema>;
 export type ResumeStructure = z.infer<typeof ResumeStructureSchema>;
