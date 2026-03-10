@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import { PdfEncryptedError, PdfScannedError } from '../middleware/error.middleware.js';
+import { PdfEncryptedError, PdfScannedError, JdTooLongError } from '../middleware/error.middleware.js';
 
 // Mock pdf.service before importing app so the mock is in place
 vi.mock('../services/pdf.service.js', () => ({
@@ -134,5 +134,55 @@ describe('POST /api/analyze', () => {
 
     expect(res.status).toBe(415);
     expect(res.body.error).toBe('pdf_not_pdf');
+  });
+
+  it('returns 400 with jd_too_long when jobDescription field is absent', async () => {
+    (pdfServiceMock.parsePdf as ReturnType<typeof vi.fn>).mockResolvedValue(MOCK_RESUME_STRUCTURE);
+
+    const res = await request(app)
+      .post('/api/analyze')
+      .attach('resume', validPdfBuffer, { filename: 'resume.pdf', contentType: 'application/pdf' });
+    // No .field('jobDescription') — omitted intentionally
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('jd_too_long');
+  });
+
+  it('returns 400 with jd_too_long when jobDescription exceeds 5000 chars', async () => {
+    const res = await request(app)
+      .post('/api/analyze')
+      .attach('resume', validPdfBuffer, { filename: 'resume.pdf', contentType: 'application/pdf' })
+      .field('jobDescription', 'x'.repeat(5001));
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('jd_too_long');
+  });
+
+  it('returns 200 when jobDescription is exactly 5000 chars (boundary)', async () => {
+    (pdfServiceMock.parsePdf as ReturnType<typeof vi.fn>).mockResolvedValue(MOCK_RESUME_STRUCTURE);
+
+    const res = await request(app)
+      .post('/api/analyze')
+      .attach('resume', validPdfBuffer, { filename: 'resume.pdf', contentType: 'application/pdf' })
+      .field('jobDescription', 'typescript react '.repeat(294).trimEnd().padEnd(5000, 'x'));
+
+    expect(res.status).toBe(200);
+  });
+
+  it('returns score, gaps, rewrites, and resumeStructure on a valid request', async () => {
+    (pdfServiceMock.parsePdf as ReturnType<typeof vi.fn>).mockResolvedValue(MOCK_RESUME_STRUCTURE);
+
+    const res = await request(app)
+      .post('/api/analyze')
+      .attach('resume', validPdfBuffer, { filename: 'resume.pdf', contentType: 'application/pdf' })
+      .field('jobDescription', 'TypeScript React developer with Node.js experience');
+
+    expect(res.status).toBe(200);
+    expect(typeof res.body.score).toBe('number');
+    expect(res.body.score).toBeGreaterThanOrEqual(0);
+    expect(res.body.score).toBeLessThanOrEqual(100);
+    expect(Array.isArray(res.body.gaps)).toBe(true);
+    expect(res.body.rewrites).toEqual([]);
+    expect(res.body.resumeStructure).toBeDefined();
   });
 });
