@@ -4,6 +4,7 @@ import { describe, it, expect } from 'vitest';
 // That is intentional — Wave 0 establishes the test contract before implementation.
 import {
   ResumeStructureSchema,
+  HeaderLineSchema,
   RewrittenBulletSchema,
   AnalysisResultSchema,
 } from '../index';
@@ -34,6 +35,11 @@ const validSection = {
   items: [validSectionItem],
 };
 
+const validHeaderLine = {
+  text: 'John Smith',
+  style: validTextStyle,
+};
+
 const validResumeStructure = {
   meta: {
     pageWidth: 612,
@@ -44,6 +50,7 @@ const validResumeStructure = {
     marginRight: 72,
   },
   sections: [validSection],
+  header: [validHeaderLine],
 };
 
 describe('ResumeStructureSchema', () => {
@@ -89,6 +96,42 @@ describe('ResumeStructureSchema', () => {
       ],
     };
     const result = ResumeStructureSchema.safeParse(invalid);
+    expect(result.success).toBe(false);
+  });
+
+  it('accepts a structure with an empty header array', () => {
+    const result = ResumeStructureSchema.safeParse({ ...validResumeStructure, header: [] });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a structure missing the header field', () => {
+    const { header: _, ...withoutHeader } = validResumeStructure;
+    const result = ResumeStructureSchema.safeParse(withoutHeader);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a header line missing the text field', () => {
+    const result = ResumeStructureSchema.safeParse({
+      ...validResumeStructure,
+      header: [{ style: validTextStyle }],
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('HeaderLineSchema', () => {
+  it('accepts a valid header line with text and style', () => {
+    const result = HeaderLineSchema.safeParse(validHeaderLine);
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a header line with no style', () => {
+    const result = HeaderLineSchema.safeParse({ text: 'John Smith' });
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects a header line with no text', () => {
+    const result = HeaderLineSchema.safeParse({ style: validTextStyle });
     expect(result.success).toBe(false);
   });
 });
