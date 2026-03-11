@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-01-PLAN.md — Wave 0 RED test stubs written, ready for Plan 05-02 (DOCX service implementation)
-last_updated: "2026-03-11T04:05:50.224Z"
+stopped_at: Completed 05-02-PLAN.md — DOCX service and generate route implemented, 70 tests green
+last_updated: "2026-03-11T04:08:38.696Z"
 last_activity: "2026-03-10 — Plan 03-01 complete: JdTooLongError added, RED test contracts written for analysis service and route"
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 18
-  completed_plans: 16
+  completed_plans: 17
   percent: 85
 ---
 
@@ -64,6 +64,7 @@ Progress: [█████████░] 85%
 | Phase 04-ai-rewrites P01 | 3 | 2 tasks | 3 files |
 | Phase 04-ai-rewrites P02 | 2 | 2 tasks | 2 files |
 | Phase 05-docx-generation P01 | 2 | 2 tasks | 3 files |
+| Phase 05-docx-generation P02 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,8 @@ Recent decisions affecting current work:
 - [Phase 04-ai-rewrites]: analysis.service.test.ts needs its own ai.service mock — direct analyzeResume calls bypass route mock and hit real OpenAI client
 - [Phase 05-docx-generation]: Pure helpers (normalizeFontName, spacingFromStyle, selectBulletText) exported from docx.service for isolated unit testing without mocking docx internals
 - [Phase 05-docx-generation]: RED state confirmed via import failure (not assertion failure) — strongest contract guarantee before implementation
+- [Phase 05-docx-generation]: docx v9 used with static import — confirmed CJS-compatible, no worker setup needed unlike pdfjs-dist
+- [Phase 05-docx-generation]: Defensive Buffer.from(buf) wrapping after Packer.toBuffer guards against older jszip returning Uint8Array
 
 ### Pending Todos
 
@@ -119,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T04:05:50.222Z
-Stopped at: Completed 05-01-PLAN.md — Wave 0 RED test stubs written, ready for Plan 05-02 (DOCX service implementation)
+Last session: 2026-03-11T04:08:38.693Z
+Stopped at: Completed 05-02-PLAN.md — DOCX service and generate route implemented, 70 tests green
 Resume file: None
