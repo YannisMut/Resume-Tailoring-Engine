@@ -12,6 +12,7 @@
   "dependencies": {
     "@resume/types": "*",
     "cors": "2.8.6",
+    "docx": "^9.6.1",
     "dotenv": "latest",
     "express": "5.2.1",
     "helmet": "8.1.0",
