@@ -98,7 +98,12 @@ Plans:
   1. The downloaded DOCX uses the approved (or edited) bullet text for every section
   2. Fonts, paragraph spacing, margins, and section structure in the DOCX match the original resume's visual layout
   3. The DOCX opens correctly in Microsoft Word and Google Docs without formatting errors
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Wave 0: install docx package + RED test stubs for docx.service and generate.route (OUT-01)
+- [ ] 05-02-PLAN.md — Implement docx.service.ts + generate.route.ts + register in index.ts; tests GREEN (OUT-01)
+- [ ] 05-03-PLAN.md — Human visual verification: DOCX opens correctly in Word and Google Docs (OUT-01)
 
 ### Phase 6: Frontend Wizard
 **Goal**: Users can complete the full workflow — upload, paste a job description, review/edit rewrites, and download a DOCX — in a single browser session without losing state
@@ -135,6 +140,6 @@ Note: Phase 5 can be developed in parallel with Phase 4 (both depend on Phase 2 
 | 2. PDF Parsing | 5/5 | Complete   | 2026-03-10 |
 | 3. Analysis | 3/3 | Complete    | 2026-03-10 |
 | 4. AI Rewrites | 2/2 | Complete   | 2026-03-11 |
-| 5. DOCX Generation | 0/TBD | Not started | - |
+| 5. DOCX Generation | 0/3 | Not started | - |
 | 6. Frontend Wizard | 0/TBD | Not started | - |
 | 7. Polish | 0/TBD | Not started | - |
