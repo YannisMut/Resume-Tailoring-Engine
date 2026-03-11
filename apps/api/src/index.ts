@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { errorMiddleware } from './middleware/error.middleware.js';
 import { analyzeRouter } from './routes/analyze.route.js';
+import { generateRouter } from './routes/generate.route.js';
 
 const app = express();
 const PORT = process.env['PORT'] ?? 3001;
@@ -21,6 +22,7 @@ app.use(express.json({ limit: '1mb' }));
 
 // Routes
 app.use('/api', analyzeRouter);
+app.use('/api', generateRouter);
 
 // Health check
 app.get('/health', (_req, res) => {
