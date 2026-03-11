@@ -10,6 +10,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@resume/types": "*",
     "cors": "2.8.6",
     "docx": "^9.6.1",
@@ -17,7 +18,6 @@
     "express": "5.2.1",
     "helmet": "8.1.0",
     "multer": "2.1.1",
-    "openai": "^6.27.0",
     "pdfjs-dist": "5.5.207",
     "zod": "4.3.6"
   },

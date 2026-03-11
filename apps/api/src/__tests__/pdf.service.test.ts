@@ -43,13 +43,21 @@ function makeTextItem(str: string, x: number, y: number, height: number, fontNam
 }
 
 // Helper to build a mock pdfjs page
+// fontObjs maps encoded font names to objects with a .name property (the real font name)
 function makeMockPage(
   textItems: { str: string; transform: number[]; height: number; fontName: string; width: number }[],
   styles: Record<string, { fontFamily: string }> = {},
+  fontObjs?: Record<string, { name: string }>,
 ) {
   return {
     view: [0, 0, 612, 792],
     getTextContent: vi.fn().mockResolvedValue({ items: textItems, styles }),
+    getOperatorList: vi.fn().mockResolvedValue({ fnArray: [], argsArray: [], length: 0 }),
+    commonObjs: {
+      has: vi.fn((id: string) => fontObjs ? id in fontObjs : false),
+      get: vi.fn((id: string) => fontObjs ? fontObjs[id] : undefined),
+    },
+    cleanup: vi.fn(),
   };
 }
 
@@ -163,6 +171,50 @@ describe('parsePdf', () => {
     expect(result.header[0]?.style.bold).toBe(false);
     expect(result.header[0]?.style.italic).toBe(false);
     expect(result.header[0]?.style.color).toBe('#000000');
+  });
+
+  it('detects bold/italic from real font names in commonObjs for encoded font names', async () => {
+    const styles = {
+      g_d0_f1: { fontFamily: 'sans-serif' },
+      g_d0_f2: { fontFamily: 'sans-serif' },
+      g_d0_f3: { fontFamily: 'sans-serif' },
+    };
+    // commonObjs provides real font names (with subset prefix) on .name
+    const fontObjs = {
+      g_d0_f1: { name: 'BCDEEE+TimesNewRomanPS-BoldMT' },           // bold
+      g_d0_f2: { name: 'BCDIEE+TimesNewRomanPS-BoldItalicMT' },     // bold + italic
+      g_d0_f3: { name: 'BCDFEE+TimesNewRomanPSMT' },                // regular
+    };
+    const textItems = [
+      // Header (bold name)
+      makeTextItem('John Doe', 100, 750, 14, 'g_d0_f1'),
+      // Heading (all caps, bold)
+      makeTextItem('EXPERIENCE', 72, 700, 18, 'g_d0_f1'),
+      // Title line (bold+italic)
+      makeTextItem('Software Engineer, Acme Corp', 72, 680, 12, 'g_d0_f2'),
+      // Bullet (regular)
+      makeTextItem('• Built something great', 90, 660, 12, 'g_d0_f3'),
+    ];
+    const mockPage = makeMockPage(textItems, styles, fontObjs);
+    const mockDoc = makeMockDoc([mockPage]);
+    (pdfjsMock.getDocument as ReturnType<typeof vi.fn>).mockReturnValue({
+      promise: Promise.resolve(mockDoc),
+    });
+
+    const result = await parsePdf(Buffer.from('fake'));
+
+    // Header "John Doe" should be bold (from FontInfo)
+    expect(result.header[0]?.style.bold).toBe(true);
+    expect(result.header[0]?.style.italic).toBe(false);
+
+    // Title "Software Engineer, Acme Corp" should be bold+italic
+    const expSection = result.sections[0];
+    expect(expSection?.items[0]?.titleStyle?.bold).toBe(true);
+    expect(expSection?.items[0]?.titleStyle?.italic).toBe(true);
+
+    // Bullet should not be bold or italic
+    expect(expSection?.items[0]?.bullets[0]?.style.bold).toBe(false);
+    expect(expSection?.items[0]?.bullets[0]?.style.italic).toBe(false);
   });
 
   it('throws PdfCorruptError when PDF has text but no section has any bullets', async () => {

@@ -48,7 +48,7 @@ export class PdfCorruptError extends AppError {
   }
 }
 
-export class OpenAiTimeoutError extends AppError {
+export class AiTimeoutError extends AppError {
   constructor() {
     super(504, 'ai_timeout', 'AI service timed out. Your analysis is preserved — try again.', true);
   }

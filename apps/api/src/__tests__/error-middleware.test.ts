@@ -6,7 +6,7 @@ import {
   errorMiddleware,
   AppError,
   PdfParseError,
-  OpenAiTimeoutError,
+  AiTimeoutError,
   PdfNotPdfError,
   PdfTooLargeError,
   PdfScannedError,
@@ -36,9 +36,9 @@ describe('errorMiddleware', () => {
     );
   });
 
-  it('returns 504 with retryable: true for OpenAiTimeoutError', () => {
+  it('returns 504 with retryable: true for AiTimeoutError', () => {
     const res = makeMockRes();
-    const err = new OpenAiTimeoutError();
+    const err = new AiTimeoutError();
     errorMiddleware(err, mockReq, res, mockNext);
     expect(res.status).toHaveBeenCalledWith(504);
     expect(res.json).toHaveBeenCalledWith(

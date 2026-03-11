@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import { PdfEncryptedError, PdfScannedError, JdTooLongError, OpenAiTimeoutError } from '../middleware/error.middleware.js';
+import { PdfEncryptedError, PdfScannedError, JdTooLongError, AiTimeoutError } from '../middleware/error.middleware.js';
 
 // Mock pdf.service before importing app so the mock is in place
 vi.mock('../services/pdf.service.js', () => ({
@@ -213,9 +213,9 @@ describe('POST /api/analyze', () => {
     expect(bullet.approved).toBe(false);
   });
 
-  it('returns 504 with ai_timeout and retryable:true when rewriteAllBullets throws OpenAiTimeoutError', async () => {
+  it('returns 504 with ai_timeout and retryable:true when rewriteAllBullets throws AiTimeoutError', async () => {
     (pdfServiceMock.parsePdf as ReturnType<typeof vi.fn>).mockResolvedValue(MOCK_RESUME_STRUCTURE);
-    mockRewriteAllBullets.mockRejectedValue(new OpenAiTimeoutError());
+    mockRewriteAllBullets.mockRejectedValue(new AiTimeoutError());
 
     const res = await request(app)
       .post('/api/analyze')

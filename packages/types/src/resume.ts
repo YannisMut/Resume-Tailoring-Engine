@@ -21,8 +21,12 @@ export const SectionItemSchema = z.object({
   id: z.string(),
   title: z.string().optional(),
   titleStyle: TextStyleSchema.optional(),
+  titleRight: z.string().optional(),         // right-aligned text (date, location)
+  titleRightStyle: TextStyleSchema.optional(),
   subtitle: z.string().optional(),
   subtitleStyle: TextStyleSchema.optional(),
+  subtitleRight: z.string().optional(),
+  subtitleRightStyle: TextStyleSchema.optional(),
   bullets: z.array(BulletSchema),
 });
 

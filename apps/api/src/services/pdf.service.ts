@@ -46,6 +46,9 @@ const HEADING_SIZE_RATIO = 1.2;
 // Indent threshold: body lines within this many pts of marginLeft are flush-left (indent 0)
 const INDENT_THRESHOLD = 10;
 
+// Minimum gap (in points) between items to consider them separate groups (left vs right-aligned)
+const RIGHT_ALIGN_GAP = 40;
+
 // Default fallback TextStyle when fontName is missing or unresolvable
 const FONT_FALLBACK: Pick<TextStyle, 'fontName' | 'fontSize' | 'bold' | 'italic' | 'color'> = {
   fontName: 'Calibri',
@@ -70,8 +73,10 @@ interface LogicalLine {
   items: RawTextItem[];
   y: number; // representative Y (first item's Y)
   maxHeight: number;
-  text: string; // concatenated text
+  text: string; // concatenated text (left portion if split)
   minX: number; // leftmost X position
+  rightText: string | null; // right-aligned portion (if detected)
+  rightItems: RawTextItem[]; // items in the right portion
 }
 
 /** Strip the ABCDEF+ embedded-subset prefix from a PDF font name */
@@ -94,6 +99,7 @@ function buildTextStyle(
   item: RawTextItem,
   styles: Record<string, { fontFamily: string }>,
   heightPts: number,
+  fontInfoMap?: Map<string, { bold: boolean; italic: boolean }>,
 ): TextStyle {
   const style = item.fontName ? styles[item.fontName] : undefined;
 
@@ -110,11 +116,16 @@ function buildTextStyle(
   // height in pdfjs is already in points; OOXML uses half-points
   const fontSize = heightPts > 0 ? Math.round(heightPts * 2) : FONT_FALLBACK.fontSize;
 
+  // Prefer FontInfo from font descriptor (reliable), fall back to regex on name
+  const info = fontInfoMap?.get(item.fontName);
+  const bold = info ? (info.bold ?? false) : detectBold(stripped);
+  const italic = info ? (info.italic ?? false) : detectItalic(stripped);
+
   return {
     fontName: family || FONT_FALLBACK.fontName,
     fontSize,
-    bold: detectBold(stripped),
-    italic: detectItalic(stripped),
+    bold,
+    italic,
     color: '#000000',
   };
 }
@@ -128,6 +139,27 @@ function median(values: number[]): number {
     return ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2;
   }
   return sorted[mid] ?? 0;
+}
+
+/**
+ * Smart-join text items by checking the gap between consecutive items.
+ * Only inserts a space when the gap exceeds a threshold based on character width.
+ */
+function smartJoinItems(items: RawTextItem[]): string {
+  if (items.length === 0) return '';
+  let text = items[0]!.str;
+  for (let i = 1; i < items.length; i++) {
+    const prev = items[i - 1]!;
+    const curr = items[i]!;
+    const gap = curr.x - (prev.x + prev.width);
+    // Only add space if gap is meaningful (> 30% of average character width)
+    const avgCharWidth = prev.str.length > 0 ? prev.width / prev.str.length : 5;
+    if (gap > avgCharWidth * 0.3) {
+      text += ' ';
+    }
+    text += curr.str;
+  }
+  return text.trim();
 }
 
 /** Group raw text items into logical lines using Y-proximity clustering */
@@ -166,15 +198,48 @@ function clusterIntoLines(items: RawTextItem[]): LogicalLine[] {
 }
 
 function buildLogicalLine(items: RawTextItem[]): LogicalLine {
-  const maxHeight = Math.max(...items.map((i) => i.height));
-  const minX = Math.min(...items.map((i) => i.x));
-  const text = items.map((i) => i.str).join(' ').trim();
+  // Ensure items are sorted left-to-right
+  const sorted = [...items].sort((a, b) => a.x - b.x);
+
+  const maxHeight = Math.max(...sorted.map((i) => i.height));
+  const minX = Math.min(...sorted.map((i) => i.x));
+
+  // Detect right-aligned portion: find the largest gap between consecutive items
+  let maxGap = 0;
+  let maxGapIdx = -1;
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = sorted[i - 1]!;
+    const curr = sorted[i]!;
+    const gap = curr.x - (prev.x + prev.width);
+    if (gap > maxGap) {
+      maxGap = gap;
+      maxGapIdx = i;
+    }
+  }
+
+  // If the largest gap is significant, split into left and right portions
+  if (maxGap >= RIGHT_ALIGN_GAP && maxGapIdx > 0) {
+    const leftItems = sorted.slice(0, maxGapIdx);
+    const rightItems = sorted.slice(maxGapIdx);
+    return {
+      items: sorted,
+      y: sorted[0]!.y,
+      maxHeight,
+      text: smartJoinItems(leftItems),
+      minX,
+      rightText: smartJoinItems(rightItems),
+      rightItems,
+    };
+  }
+
   return {
-    items,
-    y: items[0]!.y,
+    items: sorted,
+    y: sorted[0]!.y,
     maxHeight,
-    text,
+    text: smartJoinItems(sorted),
     minX,
+    rightText: null,
+    rightItems: [],
   };
 }
 
@@ -193,6 +258,38 @@ function isAllCapsHeading(text: string): boolean {
   if (t.length === 0 || t.length > 50) return false;
   // Must be all uppercase letters/spaces/ampersands — no lowercase allowed
   return /^[A-Z][A-Z\s&/\-]+$/.test(t) && /[A-Z]{3,}/.test(t);
+}
+
+/** Check if text starts with a bullet character */
+const BULLET_CHAR_RE = /^[•\-–—*]\s/;
+
+/**
+ * Preprocess body lines to join continuation lines.
+ * A continuation line is an indented line that does NOT start with a bullet character.
+ * It gets joined to the previous line (title or bullet).
+ */
+function joinContinuationLines(bodyLines: LogicalLine[], marginLeft: number): LogicalLine[] {
+  if (bodyLines.length === 0) return [];
+
+  const result: LogicalLine[] = [];
+
+  for (const line of bodyLines) {
+    const isFlushLeft = line.minX <= marginLeft + INDENT_THRESHOLD;
+    const startsWithBullet = BULLET_CHAR_RE.test(line.text);
+    const isContinuation = !isFlushLeft && !startsWithBullet;
+
+    if (isContinuation && result.length > 0) {
+      // Join to previous line's text
+      const prev = result[result.length - 1]!;
+      prev.text = prev.text + ' ' + line.text;
+      // Keep the previous line's style/position properties
+    } else {
+      // New line — shallow clone so we can safely mutate text
+      result.push({ ...line });
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -228,9 +325,12 @@ export async function parsePdf(buffer: Buffer): Promise<ResumeStructure> {
   }
 
   // --- Step 2: Collect all text items across all pages ---
+  type FontInfoMap = Map<string, { bold: boolean; italic: boolean }>;
+
   interface PageData {
     rawItems: RawTextItem[];
     styles: Record<string, { fontFamily: string }>;
+    fontInfoMap: FontInfoMap;
     pageWidth: number;
     pageHeight: number;
   }
@@ -246,6 +346,29 @@ export async function parsePdf(buffer: Buffer): Promise<ResumeStructure> {
 
     const textContent = await page.getTextContent();
     const styles = (textContent.styles ?? {}) as Record<string, { fontFamily: string }>;
+
+    // Resolve real font names via commonObjs (getTextContent only exposes encoded names
+    // like g_d0_f1; the real names like "TimesNewRomanPS-BoldMT" live on fontObj.name).
+    const fontInfoMap: FontInfoMap = new Map();
+    try {
+      await page.getOperatorList();
+      for (const fontName of Object.keys(styles)) {
+        if (page.commonObjs.has(fontName)) {
+          try {
+            const fontObj = page.commonObjs.get(fontName);
+            const realName: string = fontObj?.name ?? '';
+            if (realName) {
+              const stripped = stripSubsetPrefix(realName);
+              fontInfoMap.set(fontName, {
+                bold: detectBold(stripped),
+                italic: detectItalic(stripped),
+              });
+            }
+          } catch { /* font not resolved — skip */ }
+        }
+      }
+      page.cleanup();
+    } catch { /* getOperatorList failed — fall back to regex-only */ }
 
     const rawItems: RawTextItem[] = [];
     for (const item of textContent.items) {
@@ -271,7 +394,7 @@ export async function parsePdf(buffer: Buffer): Promise<ResumeStructure> {
     }
 
     totalTextItems += rawItems.length;
-    pages.push({ rawItems, styles, pageWidth, pageHeight });
+    pages.push({ rawItems, styles, fontInfoMap, pageWidth, pageHeight });
   }
 
   // --- Step 3: Scanned PDF check ---
@@ -286,10 +409,12 @@ export async function parsePdf(buffer: Buffer): Promise<ResumeStructure> {
   // Collect all items across all pages for layout analysis
   const allRawItems: RawTextItem[] = [];
   const allStyles: Record<string, { fontFamily: string }> = {};
+  const allFontInfo: FontInfoMap = new Map();
 
   for (const page of pages) {
     allRawItems.push(...page.rawItems);
     Object.assign(allStyles, page.styles);
+    for (const [k, v] of page.fontInfoMap) allFontInfo.set(k, v);
   }
 
   // Cluster all items into logical lines
@@ -325,37 +450,40 @@ export async function parsePdf(buffer: Buffer): Promise<ResumeStructure> {
   const marginLeft = headingXValues.length > 0 ? Math.min(...headingXValues) : 72;
 
   for (const line of allLines) {
-    const isHeading =
-      line.maxHeight >= headingThreshold || (useAllCaps && isAllCapsHeading(line.text));
+    const isSizeHeading = line.maxHeight >= headingThreshold;
+    const isCapsHeading = useAllCaps && isAllCapsHeading(line.text);
+    const isHeading = isSizeHeading || isCapsHeading;
 
     if (!foundFirstHeading) {
-      if (isHeading) {
+      // The first section heading must be all-caps (e.g., "EDUCATION").
+      // Large non-caps text (e.g., the person's name "Yannis Mutsinzi") is header, not a section.
+      const isSectionHeading = isAllCapsHeading(line.text) && isHeading;
+
+      if (isSectionHeading) {
         foundFirstHeading = true;
-        // Save previous body lines as header
-        // (already accumulated) — start first section
         currentSection = {
           heading: line.text,
-          headingStyle: buildTextStyle(line.items[0]!, allStyles, line.maxHeight),
+          headingStyle: buildTextStyle(line.items[0]!, allStyles, line.maxHeight, allFontInfo),
           bodyLines: [],
           idx: 0,
         };
       } else {
-        // Pre-heading line → header block
+        // Pre-heading line → header block (name, contact info, etc.)
         headerLines.push({
           text: line.text,
-          style: buildTextStyle(line.items[0]!, allStyles, line.maxHeight),
+          style: buildTextStyle(line.items[0]!, allStyles, line.maxHeight, allFontInfo),
         });
       }
     } else {
       if (isHeading) {
         // Finalize current section, start new one
         if (currentSection !== null) {
-          sections.push(buildSection(currentSection.heading, currentSection.headingStyle, currentSection.bodyLines, currentSection.idx, allStyles, marginLeft));
+          sections.push(buildSection(currentSection.heading, currentSection.headingStyle, currentSection.bodyLines, currentSection.idx, allStyles, marginLeft, allFontInfo));
         }
         const newIdx = sections.length; // will be pushed after we close
         currentSection = {
           heading: line.text,
-          headingStyle: buildTextStyle(line.items[0]!, allStyles, line.maxHeight),
+          headingStyle: buildTextStyle(line.items[0]!, allStyles, line.maxHeight, allFontInfo),
           bodyLines: [],
           idx: newIdx,
         };
@@ -368,11 +496,11 @@ export async function parsePdf(buffer: Buffer): Promise<ResumeStructure> {
 
   // Finalize last section
   if (currentSection !== null) {
-    sections.push(buildSection(currentSection.heading, currentSection.headingStyle, currentSection.bodyLines, currentSection.idx, allStyles, marginLeft));
+    sections.push(buildSection(currentSection.heading, currentSection.headingStyle, currentSection.bodyLines, currentSection.idx, allStyles, marginLeft, allFontInfo));
   }
 
   // --- Step 10: Minimum viable check ---
-const hasBullets = sections.some((s) => s.items.some((item) => item.bullets.length > 0));
+  const hasBullets = sections.some((s) => s.items.some((item) => item.bullets.length > 0));
   if (sections.length === 0 || !hasBullets) {
     throw new PdfCorruptError(
       'This PDF does not appear to be a standard resume — no sections with bullet points were found.',
@@ -416,19 +544,25 @@ function buildSection(
   sectionIdx: number,
   styles: Record<string, { fontFamily: string }>,
   marginLeft: number,
+  fontInfoMap?: Map<string, { bold: boolean; italic: boolean }>,
 ): Section {
   const slug = slugify(heading);
   const id = `${slug}-${sectionIdx}`;
 
-  // Group body lines into SectionItems by indent level
-  // indent 0 (within INDENT_THRESHOLD of marginLeft) = title/subtitle candidate
-  // indent 1+ = bullet candidate
+  // Preprocess: join continuation lines before building items
+  const processedLines = joinContinuationLines(bodyLines, marginLeft);
+
+  // Group body lines into SectionItems by indent level and bullet detection
   const items: SectionItem[] = [];
   let currentItem: {
     title?: string;
     titleStyle?: TextStyle;
+    titleRight?: string;
+    titleRightStyle?: TextStyle;
     subtitle?: string;
     subtitleStyle?: TextStyle;
+    subtitleRight?: string;
+    subtitleRightStyle?: TextStyle;
     bullets: { id: string; text: string; style: TextStyle }[];
     itemIdx: number;
   } | null = null;
@@ -439,30 +573,50 @@ function buildSection(
         id: `${id}-item-${currentItem.itemIdx}`,
         title: currentItem.title,
         titleStyle: currentItem.titleStyle,
+        titleRight: currentItem.titleRight,
+        titleRightStyle: currentItem.titleRightStyle,
         subtitle: currentItem.subtitle,
         subtitleStyle: currentItem.subtitleStyle,
+        subtitleRight: currentItem.subtitleRight,
+        subtitleRightStyle: currentItem.subtitleRightStyle,
         bullets: currentItem.bullets,
       });
     }
   }
 
-  for (const line of bodyLines) {
+  for (const line of processedLines) {
     const isFlushLeft = line.minX <= marginLeft + INDENT_THRESHOLD;
+    const startsWithBullet = BULLET_CHAR_RE.test(line.text);
     const firstItem = line.items[0];
     if (!firstItem) continue;
-    const lineStyle = buildTextStyle(firstItem, styles, line.maxHeight);
+    const lineStyle = buildTextStyle(firstItem, styles, line.maxHeight, fontInfoMap);
 
-    if (isFlushLeft) {
-      // Flush-left line: could be a title or subtitle within the item
+    // Flush-left line that starts with a bullet character → treat as bullet, not title
+    if (isFlushLeft && startsWithBullet) {
+      if (currentItem === null) {
+        currentItem = { bullets: [], itemIdx: items.length };
+      }
+      const bulletIdx = currentItem.bullets.length;
+      const bulletText = line.text.replace(/^[•\-–—*]\s*/, '').trim();
+      currentItem.bullets.push({
+        id: `${id}-item-${currentItem.itemIdx}-bullet-${bulletIdx}`,
+        text: bulletText,
+        style: lineStyle,
+      });
+    } else if (isFlushLeft && !startsWithBullet) {
+      // Flush-left, no bullet char → title or subtitle
       if (currentItem === null || currentItem.title !== undefined) {
-        // Start a new item when we already have a title, or have no item yet
+        // Start a new item
         if (currentItem !== null && currentItem.title !== undefined) {
           flushItem();
         }
-        const itemIdx = items.length + (currentItem !== null && currentItem.title !== undefined ? 1 : 0);
         currentItem = {
           title: line.text,
           titleStyle: lineStyle,
+          titleRight: line.rightText ?? undefined,
+          titleRightStyle: line.rightText && line.rightItems.length > 0
+            ? buildTextStyle(line.rightItems[0]!, styles, line.maxHeight, fontInfoMap)
+            : undefined,
           bullets: [],
           itemIdx: items.length,
         };
@@ -470,18 +624,18 @@ function buildSection(
         // Second flush-left line before any bullet = subtitle
         currentItem.subtitle = line.text;
         currentItem.subtitleStyle = lineStyle;
+        currentItem.subtitleRight = line.rightText ?? undefined;
+        currentItem.subtitleRightStyle = line.rightText && line.rightItems.length > 0
+          ? buildTextStyle(line.rightItems[0]!, styles, line.maxHeight, fontInfoMap)
+          : undefined;
       }
     } else {
-      // Indented line = bullet
+      // Indented line with bullet char → new bullet
       if (currentItem === null) {
-        // Bullet without a title — create implicit item
-        currentItem = {
-          bullets: [],
-          itemIdx: items.length,
-        };
+        currentItem = { bullets: [], itemIdx: items.length };
       }
       const bulletIdx = currentItem.bullets.length;
-      const bulletText = line.text.replace(/^[•\-–—*]\s*/, '').trim(); // strip leading bullet chars
+      const bulletText = line.text.replace(/^[•\-–—*]\s*/, '').trim();
       currentItem.bullets.push({
         id: `${id}-item-${currentItem.itemIdx}-bullet-${bulletIdx}`,
         text: bulletText,

@@ -1,17 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { OpenAiTimeoutError } from '../middleware/error.middleware.js';
+import { AiTimeoutError } from '../middleware/error.middleware.js';
 import type { Bullet, ResumeStructure } from '@resume/types';
 
-const mockCreate = vi.fn();
+const mockGenerateContent = vi.fn();
 
-vi.mock('openai', () => ({
-  default: class MockOpenAI {
-    chat = { completions: { create: mockCreate } };
+vi.mock('@google/generative-ai', () => ({
+  GoogleGenerativeAI: class MockGoogleGenerativeAI {
+    getGenerativeModel() {
+      return { generateContent: mockGenerateContent };
+    }
   },
 }));
 
 // Import after mock setup
-import { rewriteBullet, rewriteAllBullets } from '../services/ai.service.js';
+import { rewriteBullet, rewriteAllBullets, SYSTEM_PROMPT } from '../services/ai.service.js';
 
 // --- Fixtures ---
 
@@ -72,15 +74,19 @@ const RESUME_FIXTURE: ResumeStructure = {
   ],
 };
 
+function mockBatchResponse(texts: string[]) {
+  mockGenerateContent.mockResolvedValue({
+    response: { text: () => JSON.stringify(texts) },
+  });
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe('rewriteBullet', () => {
   it('returns RewrittenBullet with correct shape on success', async () => {
-    mockCreate.mockResolvedValue({
-      choices: [{ message: { content: 'Developed scalable backend microservices for e-commerce platform' } }],
-    });
+    mockBatchResponse(['Developed scalable backend microservices for e-commerce platform']);
 
     const result = await rewriteBullet(BULLET_FIXTURE, 'typescript developer role', ['typescript', 'microservices']);
 
@@ -90,19 +96,21 @@ describe('rewriteBullet', () => {
     expect(result.approved).toBe(false);
   });
 
-  it('trims whitespace from GPT response', async () => {
-    mockCreate.mockResolvedValue({
-      choices: [{ message: { content: '  Improved bullet with extra whitespace  ' } }],
-    });
+  it('trims whitespace from Gemini response', async () => {
+    mockBatchResponse(['  Improved bullet with extra whitespace  ']);
 
     const result = await rewriteBullet(BULLET_FIXTURE, 'jd', []);
 
     expect(result.rewritten).toBe('Improved bullet with extra whitespace');
   });
 
-  it('falls back to bullet.text when choices[0].message.content is null', async () => {
-    mockCreate.mockResolvedValue({
-      choices: [{ message: { content: null } }],
+  it('falls back to bullet.text when response.text() throws (blocked/empty response)', async () => {
+    mockGenerateContent.mockResolvedValue({
+      response: {
+        text: () => {
+          throw new Error('Response was blocked');
+        },
+      },
     });
 
     const result = await rewriteBullet(BULLET_FIXTURE, 'jd', []);
@@ -114,106 +122,70 @@ describe('rewriteBullet', () => {
 
 describe('rewriteAllBullets', () => {
   it('returns one RewrittenBullet per bullet across all sections and items (AI-01)', async () => {
-    mockCreate.mockResolvedValue({
-      choices: [{ message: { content: 'Rewritten bullet' } }],
-    });
+    mockBatchResponse(['Rewritten bullet 1', 'Rewritten bullet 2']);
 
     const results = await rewriteAllBullets(RESUME_FIXTURE, 'developer role', ['typescript']);
 
     expect(results).toHaveLength(2);
     expect(results[0]!.id).toBe(BULLET_FIXTURE.id);
+    expect(results[0]!.rewritten).toBe('Rewritten bullet 1');
     expect(results[1]!.id).toBe(BULLET_FIXTURE_2.id);
+    expect(results[1]!.rewritten).toBe('Rewritten bullet 2');
+    // Only one API call for all bullets
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to originals when JSON array length does not match bullet count', async () => {
+    mockBatchResponse(['Only one rewrite']);
+
+    const results = await rewriteAllBullets(RESUME_FIXTURE, 'developer role', ['typescript']);
+
+    expect(results).toHaveLength(2);
+    expect(results[0]!.rewritten).toBe(BULLET_FIXTURE.text);
+    expect(results[1]!.rewritten).toBe(BULLET_FIXTURE_2.text);
+  });
+
+  it('falls back to originals when response is not valid JSON', async () => {
+    mockGenerateContent.mockResolvedValue({
+      response: { text: () => 'not json at all' },
+    });
+
+    const results = await rewriteAllBullets(RESUME_FIXTURE, 'developer role', ['typescript']);
+
+    expect(results).toHaveLength(2);
+    expect(results[0]!.rewritten).toBe(BULLET_FIXTURE.text);
+    expect(results[1]!.rewritten).toBe(BULLET_FIXTURE_2.text);
   });
 });
 
 describe('SYSTEM_PROMPT content (AI-02)', () => {
-  it('contains explicit prohibition against inventing metrics', async () => {
-    // We inspect the module to find the SYSTEM_PROMPT
-    // The constraint is verified by checking mockCreate was called with the right system content
-    mockCreate.mockResolvedValue({
-      choices: [{ message: { content: 'rewritten' } }],
-    });
-
-    await rewriteBullet(BULLET_FIXTURE, 'jd', []);
-
-    const callArgs = mockCreate.mock.calls[0]![0] as { messages: { role: string; content: string }[] };
-    const systemMessage = callArgs.messages.find((m) => m.role === 'system');
-    expect(systemMessage!.content).toContain('Do NOT invent');
+  it('contains explicit prohibition against inventing metrics', () => {
+    expect(SYSTEM_PROMPT).toContain('Do NOT invent');
   });
 
-  it('contains explicit prohibition against mentioning technologies not in original', async () => {
-    mockCreate.mockResolvedValue({
-      choices: [{ message: { content: 'rewritten' } }],
-    });
-
-    await rewriteBullet(BULLET_FIXTURE, 'jd', []);
-
-    const callArgs = mockCreate.mock.calls[0]![0] as { messages: { role: string; content: string }[] };
-    const systemMessage = callArgs.messages.find((m) => m.role === 'system');
-    expect(systemMessage!.content).toContain('Do NOT mention any technology');
+  it('contains explicit prohibition against mentioning technologies not in original', () => {
+    expect(SYSTEM_PROMPT).toContain('Do NOT mention any technology');
   });
 });
 
 describe('withRetry — retry behavior (AI-03, AI-04)', () => {
-  it('retries 3 times on repeated transient failure then throws OpenAiTimeoutError', async () => {
+  it('retries 3 times on repeated transient failure then throws', async () => {
     vi.useFakeTimers();
 
-    // Simulate APIConnectionTimeoutError using constructor.name check pattern
-    const timeoutError = new Error('Connection timed out');
-    Object.defineProperty(timeoutError, 'constructor', {
-      value: { name: 'APIConnectionTimeoutError' },
-    });
+    const transientError = new Error('Service Unavailable');
+    (transientError as unknown as { status: number }).status = 503;
 
-    mockCreate.mockRejectedValue(timeoutError);
+    mockGenerateContent.mockRejectedValue(transientError);
 
-    const promise = rewriteBullet(BULLET_FIXTURE, 'jd', []);
-    // Attach rejection handler immediately to prevent unhandled rejection
-    const assertion = expect(promise).rejects.toBeInstanceOf(OpenAiTimeoutError);
+    const promise = rewriteAllBullets(RESUME_FIXTURE, 'jd', []);
+    const assertion = expect(promise).rejects.toThrow('Service Unavailable');
 
-    // Advance through backoff delays: 1000ms after attempt 1, 2000ms after attempt 2
-    await vi.advanceTimersByTimeAsync(1000);
-    await vi.advanceTimersByTimeAsync(2000);
+    // Advance through backoff delays: 20s after attempt 1, 30s after attempt 2
+    await vi.advanceTimersByTimeAsync(20_000);
+    await vi.advanceTimersByTimeAsync(30_000);
 
     await assertion;
-    expect(mockCreate).toHaveBeenCalledTimes(3);
-
-    vi.useRealTimers();
-  });
-
-  it('waits 1000ms before attempt 2 and 2000ms before attempt 3', async () => {
-    vi.useFakeTimers();
-
-    const timeoutError = new Error('Connection timed out');
-    Object.defineProperty(timeoutError, 'constructor', {
-      value: { name: 'APIConnectionTimeoutError' },
-    });
-
-    mockCreate.mockRejectedValue(timeoutError);
-
-    const promise = rewriteBullet(BULLET_FIXTURE, 'jd', []);
-    // Attach rejection handler immediately to prevent unhandled rejection
-    const assertion = expect(promise).rejects.toBeInstanceOf(OpenAiTimeoutError);
-
-    // After attempt 1 fails, should wait 1000ms
-    // Only 1 call so far at this point
-    expect(mockCreate).toHaveBeenCalledTimes(1);
-
-    await vi.advanceTimersByTimeAsync(999);
-    // Still only 1 call — delay not elapsed
-    expect(mockCreate).toHaveBeenCalledTimes(1);
-
-    await vi.advanceTimersByTimeAsync(1); // 1000ms elapsed — triggers attempt 2
-    expect(mockCreate).toHaveBeenCalledTimes(2);
-
-    await vi.advanceTimersByTimeAsync(1999);
-    // Still only 2 calls — 2000ms delay not elapsed
-    expect(mockCreate).toHaveBeenCalledTimes(2);
-
-    await vi.advanceTimersByTimeAsync(1); // 2000ms elapsed — triggers attempt 3
-    expect(mockCreate).toHaveBeenCalledTimes(3);
-
-    // Now the final attempt fails and throws
-    await assertion;
+    expect(mockGenerateContent).toHaveBeenCalledTimes(3);
 
     vi.useRealTimers();
   });
@@ -222,19 +194,35 @@ describe('withRetry — retry behavior (AI-03, AI-04)', () => {
     const permanentError = new Error('Bad Request');
     (permanentError as unknown as { status: number }).status = 400;
 
-    mockCreate.mockRejectedValue(permanentError);
+    mockGenerateContent.mockRejectedValue(permanentError);
 
-    await expect(rewriteBullet(BULLET_FIXTURE, 'jd', [])).rejects.toThrow('Bad Request');
-    expect(mockCreate).toHaveBeenCalledTimes(1);
+    await expect(rewriteAllBullets(RESUME_FIXTURE, 'jd', [])).rejects.toThrow('Bad Request');
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
   });
 
   it('does NOT retry when error has status 401 (permanent error)', async () => {
     const permanentError = new Error('Unauthorized');
     (permanentError as unknown as { status: number }).status = 401;
 
-    mockCreate.mockRejectedValue(permanentError);
+    mockGenerateContent.mockRejectedValue(permanentError);
 
-    await expect(rewriteBullet(BULLET_FIXTURE, 'jd', [])).rejects.toThrow('Unauthorized');
-    expect(mockCreate).toHaveBeenCalledTimes(1);
+    await expect(rewriteAllBullets(RESUME_FIXTURE, 'jd', [])).rejects.toThrow('Unauthorized');
+    expect(mockGenerateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws AiTimeoutError when generateContent never resolves within timeout', async () => {
+    vi.useFakeTimers();
+
+    // Never resolves
+    mockGenerateContent.mockImplementation(() => new Promise(() => {}));
+
+    const promise = rewriteAllBullets(RESUME_FIXTURE, 'jd', []);
+    const assertion = expect(promise).rejects.toBeInstanceOf(AiTimeoutError);
+
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    await assertion;
+
+    vi.useRealTimers();
   });
 });

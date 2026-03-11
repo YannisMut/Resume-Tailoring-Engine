@@ -1,23 +1,21 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import type { Bullet, ResumeStructure } from '@resume/types';
 import type { RewrittenBullet } from '@resume/types';
-import { OpenAiTimeoutError } from '../middleware/error.middleware.js';
+import { AiTimeoutError } from '../middleware/error.middleware.js';
 
-const OPENAI_TIMEOUT_MS = 30_000; // 30s per bullet call
+const GEMINI_TIMEOUT_MS = 60_000; // 60s for batch call
 const MAX_ATTEMPTS = 3;
+const MODEL_NAME = 'gemini-2.5-flash';
 
-// Delays between retry attempts: 1000ms after attempt 1, 2000ms after attempt 2
-const RETRY_DELAYS_MS = [1000, 2000];
+// Delays between retry attempts: 20s, 30s — respects Gemini free tier rate limits
+const RETRY_DELAYS_MS = [20_000, 30_000];
 
 // Singleton client — one instance per process, created on first use
-let _client: OpenAI | null = null;
+let _client: GoogleGenerativeAI | null = null;
 
-function getClient(): OpenAI {
+function getClient(): GoogleGenerativeAI {
   if (!_client) {
-    _client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      maxRetries: 0, // We handle retries ourselves with custom backoff
-    });
+    _client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '');
   }
   return _client;
 }
@@ -25,11 +23,7 @@ function getClient(): OpenAI {
 // Transient HTTP status codes — safe to retry
 const TRANSIENT_STATUSES = new Set([408, 409, 429, 500, 502, 503, 504]);
 
-// Check error names via constructor.name, NOT instanceof, because instanceof
-// breaks across vi.mock() boundaries (both classes are different references).
 function isTransient(err: unknown): boolean {
-  const name = (err as Error)?.constructor?.name ?? '';
-  if (name === 'APIConnectionTimeoutError' || name === 'APIConnectionError') return true;
   const status = (err as { status?: number })?.status;
   return TRANSIENT_STATUSES.has(status ?? 0);
 }
@@ -40,15 +34,8 @@ export async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
       return await fn();
     } catch (err) {
       const isLast = attempt === MAX_ATTEMPTS - 1;
-      if (isLast || !isTransient(err)) {
-        // Surface timeout errors with the user-facing retriable wrapper
-        if ((err as Error)?.constructor?.name === 'APIConnectionTimeoutError') {
-          throw new OpenAiTimeoutError();
-        }
-        throw err;
-      }
-      // Wait before the next attempt (1000ms, 2000ms)
-      const delayMs = RETRY_DELAYS_MS[attempt] ?? 1000;
+      if (isLast || !isTransient(err)) throw err;
+      const delayMs = RETRY_DELAYS_MS[attempt] ?? 20_000;
       await new Promise((r) => setTimeout(r, delayMs));
     }
   }
@@ -56,71 +43,110 @@ export async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
   throw new Error('unreachable');
 }
 
-export const SYSTEM_PROMPT = `You are a professional resume editor. Your task is to rewrite a single resume bullet point to better match a target job description by incorporating relevant keywords.
+export const SYSTEM_PROMPT = `You are a professional resume editor. Your task is to rewrite resume bullet points to better match a target job description by incorporating relevant keywords.
 
 STRICT RULES — violating any rule makes the rewrite invalid:
 1. Do NOT invent, add, or imply any metric, percentage, timeframe, number, or quantity that is not present in the original bullet.
 2. Do NOT mention any technology, tool, framework, language, or methodology not named in the original bullet.
 3. Keep the same verb tense and first-person perspective as the original.
-4. Keep the rewritten bullet to one sentence.
-5. If the original bullet cannot be meaningfully improved for keyword alignment, return it unchanged.
+4. Keep each rewritten bullet to one sentence.
+5. If a bullet cannot be meaningfully improved for keyword alignment, return it unchanged.
 
-Return ONLY the rewritten bullet text — no explanation, no bullet character, no quotes.`;
+You will receive a numbered list of bullets. Return a JSON array of strings, one rewritten bullet per input, in the same order. No explanation, no bullet characters, no wrapping — just the JSON array.`;
 
-function buildUserPrompt(original: string, jobDescription: string, gaps: string[]): string {
+function buildBatchUserPrompt(bullets: Bullet[], jobDescription: string, gaps: string[]): string {
   const topGaps = gaps.slice(0, 10).join(', ');
+  const numberedBullets = bullets.map((b, i) => `${i + 1}. ${b.text}`).join('\n');
   return [
-    `Original bullet: ${original}`,
+    `Bullets to rewrite:`,
+    numberedBullets,
     ``,
     `Job description (excerpt): ${jobDescription.slice(0, 1000)}`,
     ``,
     `Keywords missing from resume: ${topGaps}`,
     ``,
-    `Rewrite the bullet to incorporate relevant keywords where they fit naturally.`,
+    `Rewrite each bullet to incorporate relevant keywords where they fit naturally. Return a JSON array of strings.`,
   ].join('\n');
 }
 
+// Single-bullet rewrite — used by tests and for individual rewrites
 export async function rewriteBullet(
   bullet: Bullet,
   jobDescription: string,
   gaps: string[],
 ): Promise<RewrittenBullet> {
-  const client = getClient();
-  const content = await withRetry(async () => {
-    const response = await client.chat.completions.create(
-      {
-        model: 'gpt-4o',
-        temperature: 0.3,
-        max_tokens: 200,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: buildUserPrompt(bullet.text, jobDescription, gaps) },
-        ],
-      },
-      { timeout: OPENAI_TIMEOUT_MS },
-    );
-    return response.choices[0]?.message?.content ?? bullet.text;
-  });
-  return {
-    id: bullet.id,
-    original: bullet.text,
-    rewritten: content.trim(),
-    approved: false,
-  };
+  const results = await rewriteAllBullets(
+    { meta: { pageWidth: 0, pageHeight: 0, marginTop: 0, marginBottom: 0, marginLeft: 0, marginRight: 0 }, header: [], sections: [{ id: 'tmp', heading: '', headingStyle: bullet.style, items: [{ id: 'tmp', bullets: [bullet] }] }] },
+    jobDescription,
+    gaps,
+  );
+  return results[0]!;
 }
 
+// Batch rewrite — sends all bullets in a single API call to stay within rate limits
 export async function rewriteAllBullets(
   resume: ResumeStructure,
   jobDescription: string,
   gaps: string[],
 ): Promise<RewrittenBullet[]> {
-  const results: RewrittenBullet[] = [];
+  const allBullets: Bullet[] = [];
   for (const section of resume.sections) {
     for (const item of section.items) {
       for (const bullet of item.bullets) {
-        results.push(await rewriteBullet(bullet, jobDescription, gaps));
+        allBullets.push(bullet);
       }
     }
   }
-  return results;
+
+  if (allBullets.length === 0) return [];
+
+  const client = getClient();
+  const model = client.getGenerativeModel({
+    model: MODEL_NAME,
+    systemInstruction: SYSTEM_PROMPT,
+  });
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new AiTimeoutError()), GEMINI_TIMEOUT_MS);
+  });
+
+  try {
+    const rewrittenTexts = await Promise.race([
+      withRetry(async () => {
+        const result = await model.generateContent({
+          contents: [{ role: 'user', parts: [{ text: buildBatchUserPrompt(allBullets, jobDescription, gaps) }] }],
+          generationConfig: { temperature: 0.3, maxOutputTokens: 2000, responseMimeType: 'application/json' },
+        });
+        let responseText: string;
+        try {
+          responseText = result.response.text();
+        } catch {
+          // Blocked or empty response — return originals
+          return allBullets.map((b) => b.text);
+        }
+        try {
+          const parsed = JSON.parse(responseText);
+          if (Array.isArray(parsed) && parsed.length === allBullets.length) {
+            return parsed as string[];
+          }
+          // Wrong length — fall back to originals
+          return allBullets.map((b) => b.text);
+        } catch {
+          // Failed to parse JSON — fall back to originals
+          return allBullets.map((b) => b.text);
+        }
+      }),
+      timeoutPromise,
+    ]);
+
+    return allBullets.map((bullet, i) => ({
+      id: bullet.id,
+      original: bullet.text,
+      rewritten: (rewrittenTexts[i] ?? bullet.text).trim(),
+      approved: false,
+    }));
+  } finally {
+    clearTimeout(timer);
+  }
 }
