@@ -38,7 +38,7 @@
 
 ### Output
 
-- [ ] **OUT-01**: User can download a DOCX that uses the approved bullets and preserves the original resume's visual layout (fonts, spacing, margins, section structure)
+- [x] **OUT-01**: User can download a DOCX that uses the approved bullets and preserves the original resume's visual layout (fonts, spacing, margins, section structure)
 - [ ] **OUT-02**: System shows a processing indicator during the AI call (expected 15–30s) to prevent abandonment
 - [ ] **OUT-03**: If DOCX generation fails, analysis state (score, gaps, rewrites) is preserved in the UI so the user can retry without re-uploading
 
@@ -99,7 +99,7 @@
 | REVIEW-04 | Phase 6 | Pending |
 | REVIEW-05 | Phase 7 | Pending |
 | REVIEW-06 | Phase 7 | Pending |
-| OUT-01 | Phase 5 | Pending |
+| OUT-01 | Phase 5 | Complete |
 | OUT-02 | Phase 6 | Pending |
 | OUT-03 | Phase 6 | Pending |
 

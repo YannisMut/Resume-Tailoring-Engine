@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-11T03:43:19.653Z"
+stopped_at: Completed 05-01-PLAN.md — Wave 0 RED test stubs written, ready for Plan 05-02 (DOCX service implementation)
+last_updated: "2026-03-11T04:05:50.224Z"
 last_activity: "2026-03-10 — Plan 03-01 complete: JdTooLongError added, RED test contracts written for analysis service and route"
 progress:
   total_phases: 7
   completed_phases: 4
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 18
+  completed_plans: 16
   percent: 85
 ---
 
@@ -63,6 +63,7 @@ Progress: [█████████░] 85%
 | Phase 03-analysis P03 | 4 | 1 tasks | 2 files |
 | Phase 04-ai-rewrites P01 | 3 | 2 tasks | 3 files |
 | Phase 04-ai-rewrites P02 | 2 | 2 tasks | 2 files |
+| Phase 05-docx-generation P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,8 @@ Recent decisions affecting current work:
 - [Phase 04-ai-rewrites]: Fake timer tests attach expect().rejects before advancing timers to prevent unhandled rejection warnings
 - [Phase 04-ai-rewrites]: vi.mock factory must declare vi.fn() inline — top-level const references cause ReferenceError due to hoisting
 - [Phase 04-ai-rewrites]: analysis.service.test.ts needs its own ai.service mock — direct analyzeResume calls bypass route mock and hit real OpenAI client
+- [Phase 05-docx-generation]: Pure helpers (normalizeFontName, spacingFromStyle, selectBulletText) exported from docx.service for isolated unit testing without mocking docx internals
+- [Phase 05-docx-generation]: RED state confirmed via import failure (not assertion failure) — strongest contract guarantee before implementation
 
 ### Pending Todos
 
@@ -116,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T03:43:19.650Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-docx-generation/05-CONTEXT.md
+Last session: 2026-03-11T04:05:50.222Z
+Stopped at: Completed 05-01-PLAN.md — Wave 0 RED test stubs written, ready for Plan 05-02 (DOCX service implementation)
+Resume file: None
