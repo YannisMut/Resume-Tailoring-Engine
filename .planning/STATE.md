@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 05-02-PLAN.md — DOCX service and generate route implemented, 70 tests green
-last_updated: "2026-03-11T04:08:38.696Z"
+stopped_at: Completed 05-03-PLAN.md Task 1 — DOCX smoke test passed, stopped at human-verify checkpoint (Task 2)
+last_updated: "2026-03-11T04:11:26.076Z"
 last_activity: "2026-03-10 — Plan 03-01 complete: JdTooLongError added, RED test contracts written for analysis service and route"
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 18
-  completed_plans: 17
+  completed_plans: 18
   percent: 85
 ---
 
@@ -65,6 +65,7 @@ Progress: [█████████░] 85%
 | Phase 04-ai-rewrites P02 | 2 | 2 tasks | 2 files |
 | Phase 05-docx-generation P01 | 2 | 2 tasks | 3 files |
 | Phase 05-docx-generation P02 | 2 | 2 tasks | 3 files |
+| Phase 05-docx-generation P03 | 5 | 1 tasks | 0 files |
 
 ## Accumulated Context
 
@@ -109,6 +110,7 @@ Recent decisions affecting current work:
 - [Phase 05-docx-generation]: RED state confirmed via import failure (not assertion failure) — strongest contract guarantee before implementation
 - [Phase 05-docx-generation]: docx v9 used with static import — confirmed CJS-compatible, no worker setup needed unlike pdfjs-dist
 - [Phase 05-docx-generation]: Defensive Buffer.from(buf) wrapping after Packer.toBuffer guards against older jszip returning Uint8Array
+- [Phase 05-docx-generation]: Stale tsx watch process from pre-route-registration era held port 3001 — killed and restarted per CLAUDE.md guidance to pick up generate.route.ts
 
 ### Pending Todos
 
@@ -122,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T04:08:38.693Z
-Stopped at: Completed 05-02-PLAN.md — DOCX service and generate route implemented, 70 tests green
+Last session: 2026-03-11T04:11:26.073Z
+Stopped at: Completed 05-03-PLAN.md Task 1 — DOCX smoke test passed, stopped at human-verify checkpoint (Task 2)
 Resume file: None
