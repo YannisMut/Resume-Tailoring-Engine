@@ -10,9 +10,10 @@ requires:
 
 provides:
   - DOCX smoke test confirmed valid binary from live API
-  - Human visual verification checkpoint for layout fidelity in Word and Google Docs
+  - Human visual verification of layout fidelity in Word and Google Docs — approved
+  - Phase 5 fully complete, OUT-01 delivered
 
-affects: []
+affects: [06-frontend]
 
 tech-stack:
   added: []
@@ -24,39 +25,44 @@ key-files:
 
 key-decisions:
   - "Stale tsx watch process from pre-route-registration held port 3001 — killed and restarted to pick up generate.route.ts"
+  - "Human visual verification is the only reliable gate for DOCX layout fidelity — no automated assertion can substitute opening the file in Word and confirming rendering"
 
-patterns-established: []
+patterns-established:
+  - "Wave 2 checkpoint: automated smoke test passes → human opens file in Word and Google Docs → approves before next phase begins"
 
 requirements-completed: [OUT-01]
 
-duration: 5min
+duration: ~10min (including human review)
 completed: "2026-03-11"
 ---
 
 # Phase 5 Plan 03: Human Visual Verification Summary
 
-**POST /api/generate smoke-tested and confirmed to return a valid Microsoft Word 2007+ DOCX binary with correct Content-Type and Content-Disposition headers — awaiting human visual sign-off in Word and Google Docs.**
+**POST /api/generate confirmed end-to-end: valid DOCX binary, correct headers, approved bullet rewrites applied, and human-verified to render correctly in Microsoft Word and Google Docs.**
 
 ## Performance
 
-- **Duration:** ~5 min
+- **Duration:** ~10 min (including human review time)
 - **Started:** 2026-03-11T04:09:28Z
-- **Completed:** 2026-03-11T04:12:00Z
-- **Tasks:** 1 of 2 (Task 2 is a human-verify checkpoint)
+- **Completed:** 2026-03-11
+- **Tasks:** 2 of 2
 - **Files modified:** 0
 
 ## Accomplishments
 
-- Discovered stale tsx watch process (pre-route-registration) was still holding port 3001 — killed it and restarted the server so the generate route was active
+- Discovered stale tsx watch process (pre-route-registration) was holding port 3001 — killed it and restarted the server so the generate route was active
 - Confirmed `POST /api/generate` returns a valid Microsoft Word 2007+ DOCX binary for a minimal resume structure
 - Confirmed Content-Type is `application/vnd.openxmlformats-officedocument.wordprocessingml.document`
 - Confirmed Content-Disposition is `attachment; filename="resume_tailored.docx"`
-- Confirmed approved bullet rewrite (`"Developed scalable microservices..."`) is sent in the request and processed correctly
-- Generated file saved to `/tmp/resume_tailored.docx` ready for human visual inspection
+- Confirmed approved bullet rewrite ("Developed scalable microservices…") is applied correctly in the generated file
+- Human opened the DOCX in Microsoft Word and Google Docs — approved, no errors, layout correct
 
 ## Task Commits
 
-No file changes occurred in Task 1 (smoke test only — no source code modifications needed). No commits for this plan.
+1. **Task 1: Generate a test DOCX from a real PDF** - `4887752` (chore — smoke test, no source files changed)
+2. **Task 2: Human visual verification in Word and Google Docs** - approved by user, no code changes needed
+
+**Plan metadata:** (this summary commit)
 
 ## Files Created/Modified
 
@@ -64,7 +70,9 @@ None — all existing implementation was correct from Plan 05-02. Only a stale s
 
 ## Decisions Made
 
-Stale `tsx watch` process from the pre-implementation era was holding port 3001 and serving a version of the app without the generate route. Per CLAUDE.md guidance, killed old process with `kill $(lsof -ti :3001)` and restarted. This is documented behavior in CLAUDE.md under "Bug Fix Learnings."
+1. Stale `tsx watch` process from the pre-implementation era was holding port 3001 and serving the app without the generate route. Per CLAUDE.md guidance, killed old process with `kill $(lsof -ti :3001)` and restarted. This is documented behavior in CLAUDE.md under "Bug Fix Learnings."
+
+2. Human visual verification is the only reliable gate for DOCX layout fidelity — no automated assertion can substitute opening the file in Word and confirming rendering.
 
 ## Deviations from Plan
 
@@ -87,15 +95,17 @@ Stale `tsx watch` process from the pre-implementation era was holding port 3001 
 
 Stale `tsx watch` process on port 3001 (from before Plan 05-02 registered the generate route) caused the initial smoke test to receive a 404. Resolved by restarting the server. Consistent with CLAUDE.md guidance on verifying old servers are stopped before testing fixes.
 
-## Checkpoint Status
+## User Setup Required
 
-Task 2 (Human visual verification) is a blocking human-verify checkpoint. The DOCX at `/tmp/resume_tailored.docx` is ready for inspection in Microsoft Word and Google Docs.
+None - no external service configuration required.
 
 ## Next Phase Readiness
 
+- Phase 5 (DOCX Generation) is fully complete — all three plans done (Wave 0 test stubs, Wave 1 service implementation, Wave 2 human verification)
 - All automated tests green (70 tests, 0 failures from Plan 05-02)
-- DOCX binary validated via `file` command and HTTP headers
-- Awaiting human sign-off to complete Phase 5 and close OUT-01
+- OUT-01 delivered: user receives a downloadable DOCX with approved bullet rewrites
+- Phase 6 (Frontend) can begin: the full pipeline is proven end-to-end (PDF upload → analysis → AI rewrites → DOCX download)
+- No blockers from Phase 5
 
 ---
 *Phase: 05-docx-generation*
