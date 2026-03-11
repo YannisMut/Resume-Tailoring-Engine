@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-ai-rewrites Plan 01 — ai.service.ts implemented, all 51 tests green
-last_updated: "2026-03-10T23:37:17.270Z"
+stopped_at: Completed 04-ai-rewrites Plan 02 — integration tests for rewrites shape and ai_timeout 504, all 53 tests green
+last_updated: "2026-03-11T03:13:42.396Z"
 last_activity: "2026-03-10 — Plan 03-01 complete: JdTooLongError added, RED test contracts written for analysis service and route"
 progress:
   total_phases: 7
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
   percent: 85
 ---
 
@@ -62,6 +62,7 @@ Progress: [█████████░] 85%
 | Phase 03-analysis P02 | 3 | 1 tasks | 1 files |
 | Phase 03-analysis P03 | 4 | 1 tasks | 2 files |
 | Phase 04-ai-rewrites P01 | 3 | 2 tasks | 3 files |
+| Phase 04-ai-rewrites P02 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,8 @@ Recent decisions affecting current work:
 - [Phase 03-analysis]: 3 pre-existing route tests updated to include jobDescription and match new AnalysisResult shape — raw ResumeStructure response superseded by plan 03-01
 - [Phase 04-ai-rewrites]: isTransient() uses constructor.name not instanceof — avoids vi.mock boundary class reference mismatch
 - [Phase 04-ai-rewrites]: Fake timer tests attach expect().rejects before advancing timers to prevent unhandled rejection warnings
+- [Phase 04-ai-rewrites]: vi.mock factory must declare vi.fn() inline — top-level const references cause ReferenceError due to hoisting
+- [Phase 04-ai-rewrites]: analysis.service.test.ts needs its own ai.service mock — direct analyzeResume calls bypass route mock and hit real OpenAI client
 
 ### Pending Todos
 
@@ -113,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-10T23:37:17.268Z
-Stopped at: Completed 04-ai-rewrites Plan 01 — ai.service.ts implemented, all 51 tests green
+Last session: 2026-03-11T03:13:42.393Z
+Stopped at: Completed 04-ai-rewrites Plan 02 — integration tests for rewrites shape and ai_timeout 504, all 53 tests green
 Resume file: None

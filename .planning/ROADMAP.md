@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - Monorepo scaffold, shared types (ResumeStructure), and Express/Next.js app shells (completed 2026-03-09)
 - [x] **Phase 2: PDF Parsing** - Parse resume PDFs into ResumeStructure with spatial layout metadata; validate all bad-input cases (completed 2026-03-10)
 - [x] **Phase 3: Analysis** - Compute keyword match score and gap list algorithmically; enforce JD input constraints (completed 2026-03-10)
-- [ ] **Phase 4: AI Rewrites** - Rewrite bullets with GPT-4o using constrained prompts; handle retries and timeout recovery
+- [x] **Phase 4: AI Rewrites** - Rewrite bullets with GPT-4o using constrained prompts; handle retries and timeout recovery (completed 2026-03-11)
 - [ ] **Phase 5: DOCX Generation** - Reconstruct layout-faithful DOCX from approved bullets and ResumeStructure
 - [ ] **Phase 6: Frontend Wizard** - Wire all services into a 3-step Next.js wizard (Upload → Review → Download)
 - [ ] **Phase 7: Polish** - Add differentiator features: diff view, keyword highlighting, section-level scope control
@@ -134,7 +134,7 @@ Note: Phase 5 can be developed in parallel with Phase 4 (both depend on Phase 2 
 | 1. Foundation | 5/5 | Complete   | 2026-03-09 |
 | 2. PDF Parsing | 5/5 | Complete   | 2026-03-10 |
 | 3. Analysis | 3/3 | Complete    | 2026-03-10 |
-| 4. AI Rewrites | 1/2 | In Progress|  |
+| 4. AI Rewrites | 2/2 | Complete   | 2026-03-11 |
 | 5. DOCX Generation | 0/TBD | Not started | - |
 | 6. Frontend Wizard | 0/TBD | Not started | - |
 | 7. Polish | 0/TBD | Not started | - |
