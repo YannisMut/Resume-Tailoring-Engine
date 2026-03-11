@@ -1,14 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
-import { PdfEncryptedError, PdfScannedError, JdTooLongError } from '../middleware/error.middleware.js';
+import { PdfEncryptedError, PdfScannedError, JdTooLongError, OpenAiTimeoutError } from '../middleware/error.middleware.js';
 
 // Mock pdf.service before importing app so the mock is in place
 vi.mock('../services/pdf.service.js', () => ({
   parsePdf: vi.fn(),
 }));
 
+// Mock ai.service — factory uses vi.fn() directly (avoids hoisting variable reference issue)
+vi.mock('../services/ai.service.js', () => ({
+  rewriteAllBullets: vi.fn(),
+}));
+
 import * as pdfServiceMock from '../services/pdf.service.js';
+import * as aiServiceMock from '../services/ai.service.js';
 import app from '../index.js';
+
+const mockRewriteAllBullets = aiServiceMock.rewriteAllBullets as ReturnType<typeof vi.fn>;
 
 // Minimal valid ResumeStructure fixture for the parsePdf mock
 const MOCK_RESUME_STRUCTURE = {
@@ -65,6 +73,15 @@ const largePdfBuffer = Buffer.concat([
 describe('POST /api/analyze', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: return one rewritten bullet matching MOCK_RESUME_STRUCTURE's bullet
+    mockRewriteAllBullets.mockResolvedValue([
+      {
+        id: 'experience-0-item-0-bullet-0',
+        original: 'Built something great',
+        rewritten: 'Built something great with TypeScript',
+        approved: false,
+      },
+    ]);
   });
 
   it('returns 200 with a valid ResumeStructure when a valid PDF is uploaded', async () => {
@@ -80,7 +97,7 @@ describe('POST /api/analyze', () => {
     expect(res.body).toMatchObject({
       score: expect.any(Number),
       gaps: expect.any(Array),
-      rewrites: [],
+      rewrites: expect.any(Array),
       resumeStructure: expect.objectContaining({
         meta: expect.objectContaining({ pageWidth: 612 }),
         header: expect.any(Array),
@@ -177,6 +194,39 @@ describe('POST /api/analyze', () => {
     expect(res.status).toBe(200);
   });
 
+  it('returns populated rewrites array with RewrittenBullet shape when resume has bullets', async () => {
+    (pdfServiceMock.parsePdf as ReturnType<typeof vi.fn>).mockResolvedValue(MOCK_RESUME_STRUCTURE);
+    // mockRewriteAllBullets default return set in beforeEach
+
+    const res = await request(app)
+      .post('/api/analyze')
+      .attach('resume', validPdfBuffer, { filename: 'resume.pdf', contentType: 'application/pdf' })
+      .field('jobDescription', 'TypeScript React developer with Node.js experience');
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.rewrites)).toBe(true);
+    expect(res.body.rewrites).toHaveLength(1);
+    const bullet = res.body.rewrites[0];
+    expect(typeof bullet.id).toBe('string');
+    expect(typeof bullet.original).toBe('string');
+    expect(typeof bullet.rewritten).toBe('string');
+    expect(bullet.approved).toBe(false);
+  });
+
+  it('returns 504 with ai_timeout and retryable:true when rewriteAllBullets throws OpenAiTimeoutError', async () => {
+    (pdfServiceMock.parsePdf as ReturnType<typeof vi.fn>).mockResolvedValue(MOCK_RESUME_STRUCTURE);
+    mockRewriteAllBullets.mockRejectedValue(new OpenAiTimeoutError());
+
+    const res = await request(app)
+      .post('/api/analyze')
+      .attach('resume', validPdfBuffer, { filename: 'resume.pdf', contentType: 'application/pdf' })
+      .field('jobDescription', 'TypeScript React developer');
+
+    expect(res.status).toBe(504);
+    expect(res.body.error).toBe('ai_timeout');
+    expect(res.body.retryable).toBe(true);
+  });
+
   it('returns score, gaps, rewrites, and resumeStructure on a valid request', async () => {
     (pdfServiceMock.parsePdf as ReturnType<typeof vi.fn>).mockResolvedValue(MOCK_RESUME_STRUCTURE);
 
@@ -190,7 +240,7 @@ describe('POST /api/analyze', () => {
     expect(res.body.score).toBeGreaterThanOrEqual(0);
     expect(res.body.score).toBeLessThanOrEqual(100);
     expect(Array.isArray(res.body.gaps)).toBe(true);
-    expect(res.body.rewrites).toEqual([]);
+    expect(Array.isArray(res.body.rewrites)).toBe(true);
     expect(res.body.resumeStructure).toBeDefined();
   });
 });

@@ -1,4 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mock ai.service so analyzeResume tests don't require a real OpenAI API key
+vi.mock('../services/ai.service.js', () => ({
+  rewriteAllBullets: vi.fn().mockResolvedValue([]),
+}));
+
 import { analyzeResume } from '../services/analysis.service.js';
 
 const RESUME = {
