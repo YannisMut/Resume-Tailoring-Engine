@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { AnalysisResult } from '@resume/types';
 import { PDF_ERROR_MESSAGES } from './lib/errors';
 import type { BulletDecision, WizardStep } from './lib/types';
@@ -8,11 +8,19 @@ import { stepToIndex } from './lib/types';
 import StepBar from './components/StepBar';
 import UploadStep from './components/UploadStep';
 import LoadingStep from './components/LoadingStep';
+import ReviewStep from './components/ReviewStep';
+import DownloadStep from './components/DownloadStep';
 
 export default function WizardPage() {
   const [step, setStep] = useState<WizardStep>({ name: 'upload' });
   const [apiError, setApiError] = useState<string | null>(null);
 
+  // Download step state (separate from WizardStep to avoid re-mounting DownloadStep on each change)
+  const [generating, setGenerating] = useState(false);
+  const [downloadReady, setDownloadReady] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+
+  // --- Upload step ---
   async function submitAnalysis(file: File, jobDescription: string) {
     setApiError(null);
     setStep({ name: 'loading' });
@@ -49,6 +57,126 @@ export default function WizardPage() {
     }
   }
 
+  // --- Bullet decision handlers ---
+  function updateBullets(
+    currentStep: Extract<WizardStep, { name: 'review' | 'generating' | 'download' }>,
+    updater: (bullets: BulletDecision[]) => BulletDecision[],
+  ) {
+    setStep({ ...currentStep, bullets: updater(currentStep.bullets) });
+  }
+
+  function handleAccept(id: string) {
+    if (step.name !== 'review') return;
+    updateBullets(step, (bullets) =>
+      bullets.map((b) => (b.id === id ? { ...b, status: 'approved' as const } : b)),
+    );
+  }
+
+  function handleReject(id: string) {
+    if (step.name !== 'review') return;
+    updateBullets(step, (bullets) =>
+      bullets.map((b) => (b.id === id ? { ...b, status: 'rejected' as const } : b)),
+    );
+  }
+
+  function handleEdit(id: string, text: string) {
+    if (step.name !== 'review') return;
+    updateBullets(step, (bullets) =>
+      bullets.map((b) =>
+        b.id === id ? { ...b, status: 'edited' as const, editedText: text } : b,
+      ),
+    );
+  }
+
+  function handleRevert(id: string) {
+    if (step.name !== 'review') return;
+    updateBullets(step, (bullets) =>
+      bullets.map((b) => {
+        if (b.id !== id) return b;
+        const { editedText: _omit, ...rest } = b;
+        return { ...rest, status: 'pending' as const };
+      }),
+    );
+  }
+
+  function handleAcceptAll() {
+    if (step.name !== 'review') return;
+    updateBullets(step, (bullets) =>
+      bullets.map((b) => ({ ...b, status: 'approved' as const })),
+    );
+  }
+
+  // --- DOCX generation ---
+  const generateDocx = useCallback(
+    async (result: AnalysisResult, bullets: BulletDecision[]) => {
+      setGenerating(true);
+      setGenerationError(null);
+      setDownloadReady(false);
+
+      const approvedBullets = bullets.map((b) => ({
+        ...b,
+        rewritten: b.status === 'edited' ? (b.editedText ?? b.rewritten) : b.rewritten,
+        approved: b.status === 'approved' || b.status === 'edited',
+      }));
+
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resumeStructure: result.resumeStructure,
+            bullets: approvedBullets,
+          }),
+        });
+
+        if (!res.ok) {
+          setGenerationError('DOCX generation failed. Your edits are preserved — try again.');
+          setGenerating(false);
+          return;
+        }
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'resume_tailored.docx';
+        a.click();
+        URL.revokeObjectURL(url);
+
+        setDownloadReady(true);
+        setGenerating(false);
+      } catch {
+        setGenerationError('DOCX generation failed. Your edits are preserved — try again.');
+        setGenerating(false);
+      }
+    },
+    [],
+  );
+
+  // Auto-generate on arrival at download step
+  useEffect(() => {
+    if (step.name === 'download') {
+      generateDocx(step.result, step.bullets);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step.name === 'download']);
+
+  function handleGenerate() {
+    if (step.name !== 'review') return;
+    const { result, bullets } = step;
+    setStep({ name: 'download', result, bullets });
+    // Reset download state for fresh generation
+    setGenerating(false);
+    setDownloadReady(false);
+    setGenerationError(null);
+  }
+
+  function handleRetry() {
+    if (step.name !== 'download') return;
+    generateDocx(step.result, step.bullets);
+  }
+
+  // --- Render ---
   const currentStepIndex = stepToIndex(step.name);
 
   return (
@@ -66,26 +194,38 @@ export default function WizardPage() {
       {step.name === 'loading' && <LoadingStep />}
 
       {step.name === 'review' && (
-        <div className="max-w-5xl mx-auto px-6 py-12">
-          <p className="text-gray-500 text-sm">Review step — coming in Plan 03</p>
-        </div>
+        <ReviewStep
+          result={step.result}
+          bullets={step.bullets}
+          onAccept={handleAccept}
+          onReject={handleReject}
+          onEdit={handleEdit}
+          onRevert={handleRevert}
+          onAcceptAll={handleAcceptAll}
+          onGenerate={handleGenerate}
+        />
       )}
 
       {step.name === 'generating' && <LoadingStep />}
 
       {step.name === 'download' && (
-        <div className="max-w-5xl mx-auto px-6 py-12">
-          <p className="text-gray-500 text-sm">Download step — coming in Plan 04</p>
-        </div>
+        <DownloadStep
+          score={step.result.score}
+          gaps={step.result.gaps}
+          generating={generating}
+          downloadReady={downloadReady}
+          generationError={generationError}
+          onRetry={handleRetry}
+        />
       )}
 
       {step.name === 'error' && (
-        <div className="max-w-5xl mx-auto px-6 py-12 text-center">
-          <p className="text-red-600 font-medium mb-4">{step.message}</p>
+        <div className="max-w-md mx-auto px-6 py-20 text-center">
+          <p className="text-gray-700 mb-4">{step.message}</p>
           <button
             type="button"
             onClick={() => setStep({ name: 'upload' })}
-            className="px-6 py-2 rounded-lg bg-gray-900 text-white text-sm font-semibold hover:bg-gray-700"
+            className="rounded-lg bg-gray-900 px-6 py-2 text-sm text-white hover:bg-gray-700"
           >
             Start Over
           </button>
