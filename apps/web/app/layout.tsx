@@ -1,3 +1,5 @@
+import './globals.css';
+
 export const metadata = {
   title: 'Resume Tailoring Engine',
   description: 'AI-powered resume tailoring — upload, tailor, download.',
