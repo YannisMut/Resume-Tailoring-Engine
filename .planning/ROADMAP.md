@@ -116,7 +116,13 @@ Plans:
   4. User can approve, reject, or inline-edit each rewritten bullet individually before downloading
   5. User can revert any edited or rejected bullet back to the AI rewrite with one click
   6. If DOCX generation fails, the score, gaps, and rewrites remain visible so the user can retry without re-uploading
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Tailwind v4 + Vitest infra + RED test stubs + lib/errors.ts
+- [ ] 06-02-PLAN.md — Upload step: DropZone, JD textarea, page.tsx state machine
+- [ ] 06-03-PLAN.md — Review step: BulletCard (tests GREEN) + ReviewStep grouped layout
+- [ ] 06-04-PLAN.md — Download step: DownloadStep (tests GREEN) + full wiring + human verify
 
 ### Phase 7: Polish
 **Goal**: Differentiator features are in place that make AI changes transparent, ATS keyword insertion visible, and rewrite scope controllable
