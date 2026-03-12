@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Analysis** - Compute keyword match score and gap list algorithmically; enforce JD input constraints (completed 2026-03-10)
 - [x] **Phase 4: AI Rewrites** - Rewrite bullets with GPT-4o using constrained prompts; handle retries and timeout recovery (completed 2026-03-11)
 - [x] **Phase 5: DOCX Generation** - Reconstruct layout-faithful DOCX from approved bullets and ResumeStructure (completed 2026-03-11)
-- [ ] **Phase 6: Frontend Wizard** - Wire all services into a 3-step Next.js wizard (Upload → Review → Download)
+- [x] **Phase 6: Frontend Wizard** - Wire all services into a 3-step Next.js wizard (Upload → Review → Download) (completed 2026-03-12)
 - [ ] **Phase 7: Polish** - Add differentiator features: diff view, keyword highlighting, section-level scope control
 
 ## Phase Details
@@ -147,5 +147,5 @@ Note: Phase 5 can be developed in parallel with Phase 4 (both depend on Phase 2 
 | 3. Analysis | 3/3 | Complete    | 2026-03-10 |
 | 4. AI Rewrites | 2/2 | Complete   | 2026-03-11 |
 | 5. DOCX Generation | 3/3 | Complete   | 2026-03-11 |
-| 6. Frontend Wizard | 3/4 | In Progress|  |
+| 6. Frontend Wizard | 4/4 | Complete   | 2026-03-12 |
 | 7. Polish | 0/TBD | Not started | - |

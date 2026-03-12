@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-12T05:09:44.746Z"
+stopped_at: "Stopped at Task 3 checkpoint: human verify end-to-end wizard flow in browser (06-04-PLAN.md)"
+last_updated: "2026-03-12T05:14:43.308Z"
 last_activity: "2026-03-10 — Plan 03-01 complete: JdTooLongError added, RED test contracts written for analysis service and route"
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 22
-  completed_plans: 21
+  completed_plans: 22
   percent: 85
 ---
 
@@ -70,6 +70,7 @@ Progress: [█████████░] 85%
 | Phase 06-frontend-wizard P01 | 2 | 2 tasks | 9 files |
 | Phase 06-frontend-wizard P03 | 2 | 2 tasks | 3 files |
 | Phase 06-frontend-wizard P02 | 3 | 2 tasks | 6 files |
+| Phase 06-frontend-wizard P04 | 5 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -123,6 +124,9 @@ Recent decisions affecting current work:
 - [Phase 06-frontend-wizard]: ReviewStep uses sticky bottom-0 for Generate footer, not position: fixed, to avoid overflow ancestor conflicts
 - [Phase 06-frontend-wizard]: WizardStep discriminated union — review/generating/download carry result and bullets for full context in child components
 - [Phase 06-frontend-wizard]: DropZone localError separate from apiError prop — client validation errors clear on new file selection, API errors clear via onResetApiError
+- [Phase 06-frontend-wizard]: DownloadStep renders generationError prop directly without appending extra text — prevents duplicate match in tests when error message already contains full user-facing text
+- [Phase 06-frontend-wizard]: handleRevert uses destructuring omit instead of editedText: undefined to satisfy exactOptionalPropertyTypes in tsconfig
+- [Phase 06-frontend-wizard]: Download state (generating/downloadReady/generationError) lives in separate useState outside WizardStep so Retry can call generateDocx without re-mounting DownloadStep
 
 ### Pending Todos
 
@@ -136,6 +140,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-12T05:09:44.744Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-03-12T05:14:43.305Z
+Stopped at: Stopped at Task 3 checkpoint: human verify end-to-end wizard flow in browser (06-04-PLAN.md)
 Resume file: None
