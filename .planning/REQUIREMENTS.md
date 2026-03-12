@@ -12,7 +12,7 @@
 - [x] **INPUT-03**: System rejects files over 10MB with a clear error message before processing
 - [x] **INPUT-04**: System detects scanned/image-only PDFs and shows a helpful error (no text content to extract)
 - [x] **INPUT-05**: System detects and rejects password-protected PDFs with a clear error message
-- [ ] **INPUT-06**: User can paste or type a job description into a plain textarea
+- [x] **INPUT-06**: User can paste or type a job description into a plain textarea
 
 ### Analysis
 
@@ -29,18 +29,18 @@
 
 ### Review UI
 
-- [ ] **REVIEW-01**: User sees original and rewritten bullets side-by-side for every bullet in the resume
-- [ ] **REVIEW-02**: User can approve, reject, or inline-edit each rewritten bullet individually before generating the DOCX
+- [x] **REVIEW-01**: User sees original and rewritten bullets side-by-side for every bullet in the resume
+- [x] **REVIEW-02**: User can approve, reject, or inline-edit each rewritten bullet individually before generating the DOCX
 - [ ] **REVIEW-03**: User sees a character-level diff view highlighting exactly what the AI changed in each bullet (via diff-match-patch)
-- [ ] **REVIEW-04**: User can revert any rewritten bullet to the original with one click
+- [x] **REVIEW-04**: User can revert any rewritten bullet to the original with one click
 - [ ] **REVIEW-05**: Gap keywords are visually highlighted in rewritten bullets to show where they were inserted
 - [ ] **REVIEW-06**: User can select which resume sections to include in the AI rewrite (section-level scope control)
 
 ### Output
 
 - [x] **OUT-01**: User can download a DOCX that uses the approved bullets and preserves the original resume's visual layout (fonts, spacing, margins, section structure)
-- [ ] **OUT-02**: System shows a processing indicator during the AI call (expected 15–30s) to prevent abandonment
-- [ ] **OUT-03**: If DOCX generation fails, analysis state (score, gaps, rewrites) is preserved in the UI so the user can retry without re-uploading
+- [x] **OUT-02**: System shows a processing indicator during the AI call (expected 15–30s) to prevent abandonment
+- [x] **OUT-03**: If DOCX generation fails, analysis state (score, gaps, rewrites) is preserved in the UI so the user can retry without re-uploading
 
 ## v2 Requirements
 
@@ -85,7 +85,7 @@
 | INPUT-03 | Phase 2 | Complete |
 | INPUT-04 | Phase 2 | Complete |
 | INPUT-05 | Phase 2 | Complete |
-| INPUT-06 | Phase 6 | Pending |
+| INPUT-06 | Phase 6 | Complete |
 | ANAL-01 | Phase 3 | Complete |
 | ANAL-02 | Phase 3 | Complete |
 | ANAL-03 | Phase 3 | Complete |
@@ -93,15 +93,15 @@
 | AI-02 | Phase 4 | Complete |
 | AI-03 | Phase 4 | Complete |
 | AI-04 | Phase 4 | Complete |
-| REVIEW-01 | Phase 6 | Pending |
-| REVIEW-02 | Phase 6 | Pending |
+| REVIEW-01 | Phase 6 | Complete |
+| REVIEW-02 | Phase 6 | Complete |
 | REVIEW-03 | Phase 7 | Pending |
-| REVIEW-04 | Phase 6 | Pending |
+| REVIEW-04 | Phase 6 | Complete |
 | REVIEW-05 | Phase 7 | Pending |
 | REVIEW-06 | Phase 7 | Pending |
 | OUT-01 | Phase 5 | Complete |
-| OUT-02 | Phase 6 | Pending |
-| OUT-03 | Phase 6 | Pending |
+| OUT-02 | Phase 6 | Complete |
+| OUT-03 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 22 total
