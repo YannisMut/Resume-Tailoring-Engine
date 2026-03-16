@@ -141,6 +141,25 @@ text, then set a `RIGHT` tab stop at `contentWidthTwips`:
 tabStops: [{ type: TabStopType.RIGHT, position: contentWidthTwips }]
 ```
 
+### Gemini API — response truncated by low maxOutputTokens causes silent fallback
+`extractKeywords()` uses `responseMimeType: 'application/json'` which produces nicely-formatted
+JSON with newlines and indentation. This inflates token count. With `maxOutputTokens: 1500`, the
+response was cut off mid-JSON object, causing `JSON.parse()` to throw and silently trigger
+`fallbackTokenize()` — returning garbage single-word tokens with no warning.
+
+**Fix:** Increase `maxOutputTokens` to `4096` for the keyword extraction call. Formatted JSON
+for ~20 keywords typically uses 800–1200 tokens; 4096 gives ample headroom.
+
+**Diagnosis pattern:** If `extractKeywords` returns single lowercase words (e.g. `role`, `looking`,
+`intern`), it has fallen back to the tokenizer. Check for `[extractKeywords]` console warnings.
+If none appear, the server may be running stale code (built dist vs. tsx watch source).
+
+### Gemini API — stale server running built dist instead of source
+When running `node dist/index.js` (the `start` script), code changes have no effect until
+`tsup` rebuilds the dist. During development always use `npm run dev --workspace=apps/api`
+(`tsx watch`) which hot-reloads on file save. If `tsx watch` appears stale, kill all node
+processes and restart: `killall -9 node tsx && npm run dev --workspace=apps/api`.
+
 ### DOCX generation — no hyperlinks for email/LinkedIn
 Contact info in the header contains emails and URLs that should be clickable blue links.
 
