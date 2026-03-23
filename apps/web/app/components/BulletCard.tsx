@@ -32,25 +32,52 @@ export default function BulletCard({ bullet, onAccept, onReject, onEdit, onRever
     setIsEditing(false);
   }
 
-  // Status badge styles
-  const statusBadge: Record<BulletDecision['status'], string> = {
-    pending: 'bg-gray-100 text-gray-500',
-    approved: 'bg-green-100 text-green-700',
-    rejected: 'bg-red-100 text-red-600',
-    edited: 'bg-blue-100 text-blue-700',
+  // Status badge config
+  const statusConfig: Record<BulletDecision['status'], { className: string; icon: React.ReactNode }> = {
+    pending: {
+      className: 'bg-slate-100 text-slate-500',
+      icon: null,
+    },
+    approved: {
+      className: 'bg-success-100 text-success-700',
+      icon: (
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      ),
+    },
+    rejected: {
+      className: 'bg-danger-100 text-danger-600',
+      icon: (
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      ),
+    },
+    edited: {
+      className: 'bg-primary-100 text-primary-700',
+      icon: (
+        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" />
+        </svg>
+      ),
+    },
   };
 
+  const badge = statusConfig[bullet.status];
+
   return (
-    <div className={`rounded-lg border p-4 transition-colors ${
+    <div className={`rounded-xl border p-5 transition-all duration-200 shadow-sm hover:shadow-md ${
       bullet.status === 'approved' || bullet.status === 'edited'
-        ? 'border-green-200 bg-green-50'
+        ? 'border-success-200 bg-success-50/60'
         : bullet.status === 'rejected'
-        ? 'border-red-200 bg-red-50'
-        : 'border-gray-200 bg-white'
+        ? 'border-danger-200 bg-danger-50/60'
+        : 'border-slate-200 bg-white'
     }`}>
-      {/* Status badge */}
-      <div className="mb-3 flex items-center justify-between">
-        <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusBadge[bullet.status]}`}>
+      {/* Status badge + revert */}
+      <div className="mb-4 flex items-center justify-between">
+        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${badge.className}`}>
+          {badge.icon}
           {bullet.status}
         </span>
         {hasDecision && (
@@ -62,8 +89,11 @@ export default function BulletCard({ bullet, onAccept, onReject, onEdit, onRever
               setIsEditing(false);
               setEditText(bullet.rewritten);
             }}
-            className="text-xs text-gray-500 underline hover:text-gray-700"
+            className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-primary-600 transition-colors font-medium"
           >
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+            </svg>
             Revert
           </button>
         )}
@@ -72,20 +102,20 @@ export default function BulletCard({ bullet, onAccept, onReject, onEdit, onRever
       {/* Two-column: original | rewrite */}
       <div className="grid grid-cols-2 gap-4">
         {/* Left: original */}
-        <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Original</p>
-          <p className="text-sm text-gray-700">{bullet.original}</p>
+        <div className="pl-3 border-l-2 border-slate-200">
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">Original</p>
+          <p className="text-sm text-slate-700 leading-relaxed">{bullet.original}</p>
         </div>
 
         {/* Right: rewrite or edit textarea */}
-        <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">AI Rewrite</p>
+        <div className="pl-3 border-l-2 border-primary-200">
+          <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">AI Rewrite</p>
           {isEditing ? (
             <div>
               <textarea
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                className="w-full rounded border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 min-h-[80px] resize-y"
+                className="w-full rounded-lg border border-slate-200 bg-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 min-h-[80px] resize-y shadow-sm"
                 aria-label="Edit bullet text"
               />
               <div className="mt-2 flex gap-2">
@@ -93,7 +123,7 @@ export default function BulletCard({ bullet, onAccept, onReject, onEdit, onRever
                   type="button"
                   aria-label="Save"
                   onClick={handleSave}
-                  className="rounded bg-gray-900 px-3 py-1 text-xs text-white hover:bg-gray-700"
+                  className="rounded-lg bg-primary-600 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-primary-700 transition-colors shadow-sm"
                 >
                   Save
                 </button>
@@ -101,14 +131,14 @@ export default function BulletCard({ bullet, onAccept, onReject, onEdit, onRever
                   type="button"
                   aria-label="Cancel"
                   onClick={handleCancel}
-                  className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50"
+                  className="rounded-lg border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
               </div>
             </div>
           ) : (
-            <p className="text-sm text-gray-700">{displayRewrite}</p>
+            <p className="text-sm text-slate-700 leading-relaxed">{displayRewrite}</p>
           )}
         </div>
       </div>
@@ -120,10 +150,10 @@ export default function BulletCard({ bullet, onAccept, onReject, onEdit, onRever
             type="button"
             aria-label="Accept"
             onClick={() => onAccept(bullet.id)}
-            className={`flex-1 rounded py-1.5 text-sm font-medium transition-colors ${
+            className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-all duration-150 border ${
               bullet.status === 'approved' || bullet.status === 'edited'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-green-100 hover:text-green-700'
+                ? 'bg-success-600 text-white border-success-600 shadow-sm'
+                : 'bg-success-50 text-success-700 border-success-200 hover:bg-success-100'
             }`}
           >
             Accept
@@ -135,7 +165,7 @@ export default function BulletCard({ bullet, onAccept, onReject, onEdit, onRever
               setEditText(displayRewrite);
               setIsEditing(true);
             }}
-            className="flex-1 rounded bg-gray-100 py-1.5 text-sm font-medium text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors"
+            className="flex-1 rounded-lg bg-primary-50 py-2 text-sm font-semibold text-primary-700 border border-primary-200 hover:bg-primary-100 transition-all duration-150"
           >
             Edit
           </button>
@@ -143,10 +173,10 @@ export default function BulletCard({ bullet, onAccept, onReject, onEdit, onRever
             type="button"
             aria-label="Reject"
             onClick={() => onReject(bullet.id)}
-            className={`flex-1 rounded py-1.5 text-sm font-medium transition-colors ${
+            className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-all duration-150 border ${
               bullet.status === 'rejected'
-                ? 'bg-red-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-red-100 hover:text-red-600'
+                ? 'bg-danger-500 text-white border-danger-500 shadow-sm'
+                : 'bg-danger-50 text-danger-600 border-danger-200 hover:bg-danger-100'
             }`}
           >
             Reject

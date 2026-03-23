@@ -39,10 +39,20 @@ export default function UploadStep({ onSubmit, apiError, onResetApiError }: Uplo
 
   return (
     <form onSubmit={handleSubmit} className="max-w-5xl mx-auto px-6 py-12">
+      {/* Hero headline */}
+      <div className="text-center mb-10">
+        <h1 className="font-heading text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">
+          Tailor Your Resume in Seconds
+        </h1>
+        <p className="mt-3 text-lg text-slate-500 max-w-2xl mx-auto">
+          Upload your resume and paste the job description. Our AI analyzes keyword gaps and rewrites your bullets to match.
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left column: resume drop zone */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-6">
+          <label className="block text-sm font-semibold text-slate-700 mb-3">
             Your Resume
           </label>
           <DropZone
@@ -54,10 +64,10 @@ export default function UploadStep({ onSubmit, apiError, onResetApiError }: Uplo
         </div>
 
         {/* Right column: job description textarea */}
-        <div>
+        <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-6">
           <label
             htmlFor="job-description"
-            className="block text-sm font-semibold text-gray-700 mb-2"
+            className="block text-sm font-semibold text-slate-700 mb-3"
           >
             Job Description
           </label>
@@ -66,26 +76,29 @@ export default function UploadStep({ onSubmit, apiError, onResetApiError }: Uplo
             value={jd}
             onChange={handleJdChange}
             placeholder="Paste the job description here..."
-            className="w-full min-h-[240px] rounded-lg border border-gray-300 p-3 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-gray-900"
+            className="w-full min-h-[240px] rounded-xl border border-slate-200 bg-slate-50/50 p-4 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-shadow shadow-sm"
           />
-          <p className="mt-1 text-xs text-gray-400 text-right">
+          <p className="mt-2 text-xs text-slate-400 text-right">
             {jd.length.toLocaleString()} / 5,000 characters
           </p>
         </div>
       </div>
 
       {/* Submit button */}
-      <div className="mt-8 flex justify-center">
+      <div className="mt-10 flex justify-center">
         <button
           type="submit"
           disabled={isDisabled}
-          className={`px-8 py-3 rounded-lg text-sm font-semibold transition-colors ${
+          className={`flex items-center gap-2 px-10 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ${
             isDisabled
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-gray-900 text-white hover:bg-gray-700'
+              ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              : 'bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-lg active:scale-[0.98]'
           }`}
         >
-          Analyze Resume &rarr;
+          Analyze Resume
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
         </button>
       </div>
     </form>

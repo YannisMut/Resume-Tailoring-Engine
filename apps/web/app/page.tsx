@@ -182,7 +182,7 @@ export default function WizardPage() {
   const currentStepIndex = stepToIndex(step.name);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-surface bg-dot-pattern">
       <StepBar currentStep={currentStepIndex} />
 
       {step.name === 'upload' && (
@@ -223,11 +223,11 @@ export default function WizardPage() {
 
       {step.name === 'error' && (
         <div className="max-w-md mx-auto px-6 py-20 text-center">
-          <p className="text-gray-700 mb-4">{step.message}</p>
+          <p className="text-slate-700 mb-4">{step.message}</p>
           <button
             type="button"
             onClick={() => setStep({ name: 'upload' })}
-            className="rounded-lg bg-gray-900 px-6 py-2 text-sm text-white hover:bg-gray-700"
+            className="rounded-xl bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-700 shadow-md transition-all duration-200"
           >
             Start Over
           </button>
