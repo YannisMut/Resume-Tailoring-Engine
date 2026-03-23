@@ -37,7 +37,7 @@ function stripCodeFences(text: string): string {
 
 const GEMINI_TIMEOUT_MS = 120_000; // 2 minutes — two sequential Gemini calls can each take up to 60s
 const MAX_ATTEMPTS = 3;
-const MODEL_NAME = 'gemini-3-flash-preview';
+const MODEL_NAME = 'gemini-2.5-flash';
 
 // Delays between retry attempts: 20s, 30s — respects Gemini free tier rate limits
 const RETRY_DELAYS_MS = [20_000, 30_000];

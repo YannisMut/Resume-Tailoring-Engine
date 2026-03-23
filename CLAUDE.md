@@ -19,8 +19,10 @@ each call its full budget without the combined time blowing past the limit.
 incorporate.
 
 ### Gemini model names — use exact names from ListModels, no date suffixes
-`gemini-3-flash-preview` is the currently working model for this project (confirmed March 2026).
-`gemini-2.5-flash` is available (no date suffix). `gemini-2.5-flash-preview-05-20` returns 404.
+`gemini-2.5-flash` is the currently working model for this project (switched March 2026 — stable,
+no date suffix, fast JSON mode). `gemini-3-flash-preview` is available but unreliable for JSON
+mode (constrained decoding causes extreme slowness and silent fallbacks). Do NOT use preview models
+for production — they change without notice.
 
 **To find valid model names for the current API key:**
 ```bash
