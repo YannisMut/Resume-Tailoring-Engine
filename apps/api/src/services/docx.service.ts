@@ -7,6 +7,16 @@ import type { RewrittenBullet } from '@resume/types';
 
 const BULLET_REF = 'resume-bullet';
 
+// Default spacing (TWIPs: 20 TWIPs = 1pt) applied when PDF parser doesn't provide spacing.
+const SPACING = {
+  AFTER_HEADER: 160,          // 8pt — gap between header block and first section
+  BEFORE_SECTION: 200,        // 10pt
+  AFTER_SECTION: 80,          // 4pt
+  BEFORE_ITEM_TITLE: 120,     // 6pt — gap between job entries within a section
+  BETWEEN_BULLETS: 20,        // 1pt — tight gap between bullets
+  BULLET_LINE_HEIGHT: 260,    // 13pt — line height for ~11pt body text
+} as const;
+
 const FONT_SUBSTITUTION_MAP: Record<string, string> = {
   'Helvetica': 'Arial',
   'Helvetica-Bold': 'Arial',
@@ -137,6 +147,7 @@ function buildTitleParagraph(
   rightText: string | undefined,
   rightStyle: TextStyle | undefined,
   contentWidthTwips: number,
+  spaceBeforeTwips?: number,
 ): Paragraph {
   const children: TextRun[] = [textRunFromStyle(leftText, leftStyle)];
 
@@ -145,9 +156,14 @@ function buildTitleParagraph(
     children.push(textRunFromStyle(rightText, rightStyle));
   }
 
+  const spacing = spacingFromStyle(leftStyle);
+
   return new Paragraph({
     children,
-    spacing: spacingFromStyle(leftStyle),
+    spacing: {
+      ...spacing,
+      ...(spaceBeforeTwips != null ? { before: spacing.before ?? spaceBeforeTwips } : {}),
+    },
     tabStops: rightText ? [{ type: TabStopType.RIGHT, position: contentWidthTwips }] : undefined,
   });
 }
@@ -165,10 +181,15 @@ export async function generateDocx(
   const contentWidthTwips = pageWidthTwips - marginLeftTwips - marginRightTwips;
 
   // Header lines — centered, with hyperlinks for emails/URLs
-  for (const line of structure.header) {
+  for (let i = 0; i < structure.header.length; i++) {
+    const line = structure.header[i]!;
+    const isLast = i === structure.header.length - 1;
     children.push(new Paragraph({
       children: buildHeaderRunsWithLinks(line.text, line.style),
-      spacing: spacingFromStyle(line.style),
+      spacing: {
+        ...spacingFromStyle(line.style),
+        after: isLast ? SPACING.AFTER_HEADER : 0,
+      },
       alignment: AlignmentType.CENTER,
     }));
   }
@@ -191,12 +212,15 @@ export async function generateDocx(
       },
     }));
 
-    for (const item of section.items) {
+    for (let itemIdx = 0; itemIdx < section.items.length; itemIdx++) {
+      const item = section.items[itemIdx]!;
+      const isFirstItem = itemIdx === 0;
       if (item.title && item.titleStyle) {
         children.push(buildTitleParagraph(
           item.title, item.titleStyle,
           item.titleRight, item.titleRightStyle,
           contentWidthTwips,
+          isFirstItem ? undefined : SPACING.BEFORE_ITEM_TITLE,
         ));
       }
       if (item.subtitle && item.subtitleStyle) {
@@ -209,10 +233,16 @@ export async function generateDocx(
       for (const bullet of item.bullets) {
         const rewritten = bulletMap.get(bullet.id);
         const text = selectBulletText(bullet.text, rewritten);
+        const bulletSpacing = spacingFromStyle(bullet.style);
         children.push(new Paragraph({
           numbering: { reference: BULLET_REF, level: 0 },
           children: [textRunFromStyle(text, bullet.style)],
-          spacing: spacingFromStyle(bullet.style),
+          spacing: {
+            ...bulletSpacing,
+            after: bulletSpacing.after ?? SPACING.BETWEEN_BULLETS,
+            line: bulletSpacing.line ?? SPACING.BULLET_LINE_HEIGHT,
+            lineRule: bulletSpacing.lineRule ?? LineRuleType.EXACT,
+          },
         }));
       }
     }

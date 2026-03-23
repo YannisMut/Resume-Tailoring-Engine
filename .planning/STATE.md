@@ -81,7 +81,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
 - Foundation: ResumeStructure must carry both text content AND layout metadata (font, size, bold, italic, spacing, margins) — design completely before any service implementation
-- Foundation: ai.service.ts is the only file that touches OpenAI — fully isolated for future provider swapping
+- Foundation: ai.service.ts is the only file that touches the AI provider (Gemini) — fully isolated for future provider swapping
 - Foundation: Stateless v1 — ResumeStructure round-trips through the client between /api/analyze and /api/generate
 - [Phase 01-foundation]: turbo.json uses tasks key (v2 API) not pipeline (v1 API) to avoid errors in Turbo 2.x
 - [Phase 01-foundation]: packages/types exports ./src/index.ts directly so apps can import without a build step during development
@@ -91,7 +91,7 @@ Recent decisions affecting current work:
 - [Phase 01-foundation]: All @resume/types fields are JSON-serializable primitives only — enables stateless AnalysisResult round-trip through client
 - [Phase 01-foundation]: TextStyle includes optional lineSpacingPt, spaceBefore, spaceAfter — ensures Phase 5 DOCX can reconstruct paragraph spacing
 - [Phase 01-foundation]: errorMiddleware is the single catch boundary — no try/catch in route handlers (Express 5 propagates async throws automatically)
-- [Phase 01-foundation]: AppError subclasses define error contract before all service implementation — PdfParseError(422) and OpenAiTimeoutError(504/retryable) cover Phase 2 and 3 failure modes
+- [Phase 01-foundation]: AppError subclasses define error contract before all service implementation — PdfParseError(422) and AiTimeoutError(504/retryable) cover Phase 2 and 3 failure modes
 - [Phase 01-foundation]: apps/web tsconfig overrides module/moduleResolution to ESNext/bundler — Next.js internal type declarations incompatible with NodeNext resolution in tsconfig.base.json
 - [Phase 01-foundation]: transpilePackages: ['@resume/types'] in next.config.ts required because packages/types exports TS source directly with no build step
 - [Phase 02-pdf-parsing]: header field is required (not optional) on ResumeStructureSchema — empty array valid for resumes with no detected header block, but field must always be populated so Plan 02-04 always writes it
@@ -111,7 +111,7 @@ Recent decisions affecting current work:
 - [Phase 04-ai-rewrites]: isTransient() uses constructor.name not instanceof — avoids vi.mock boundary class reference mismatch
 - [Phase 04-ai-rewrites]: Fake timer tests attach expect().rejects before advancing timers to prevent unhandled rejection warnings
 - [Phase 04-ai-rewrites]: vi.mock factory must declare vi.fn() inline — top-level const references cause ReferenceError due to hoisting
-- [Phase 04-ai-rewrites]: analysis.service.test.ts needs its own ai.service mock — direct analyzeResume calls bypass route mock and hit real OpenAI client
+- [Phase 04-ai-rewrites]: analysis.service.test.ts needs its own ai.service mock — direct analyzeResume calls bypass route mock and hit real Gemini client
 - [Phase 05-docx-generation]: Pure helpers (normalizeFontName, spacingFromStyle, selectBulletText) exported from docx.service for isolated unit testing without mocking docx internals
 - [Phase 05-docx-generation]: RED state confirmed via import failure (not assertion failure) — strongest contract guarantee before implementation
 - [Phase 05-docx-generation]: docx v9 used with static import — confirmed CJS-compatible, no worker setup needed unlike pdfjs-dist
@@ -140,7 +140,7 @@ None yet.
 
 - Phase 2 (PDF Parsing): Spatial clustering algorithm for grouping pdfjs-dist text spans by Y-proximity has no off-the-shelf solution — high-risk, may need /gsd:research-phase before implementation
 - Phase 5 (DOCX Generation): PDF embedded font names are mangled subsets (e.g., "ABCDEF+Calibri") — normalization strategy needs resolution before implementation
-- Library versions (pdfjs-dist, docx, openai, turbo, tsx, tsup) must be verified against npm before Phase 1 installation
+- Library versions (pdfjs-dist, docx, @google/generative-ai, turbo, tsx, tsup) must be verified against npm before Phase 1 installation
 
 ## Session Continuity
 

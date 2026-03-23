@@ -30,7 +30,12 @@ function fallbackTokenize(text: string): ExtractedKeyword[] {
   )).map((keyword) => ({ keyword, aliases: [], priority: 'preferred' as const, category: 'hard_skill' as const }));
 }
 
-const GEMINI_TIMEOUT_MS = 60_000; // 60s for batch call
+function stripCodeFences(text: string): string {
+  const fenced = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+  return fenced ? fenced[1]! : text.trim();
+}
+
+const GEMINI_TIMEOUT_MS = 120_000; // 2 minutes — two sequential Gemini calls can each take up to 60s
 const MAX_ATTEMPTS = 3;
 const MODEL_NAME = 'gemini-3-flash-preview';
 
@@ -228,7 +233,7 @@ export async function rewriteAllBullets(
       withRetry(async () => {
         const result = await model.generateContent({
           contents: [{ role: 'user', parts: [{ text: buildBatchUserPrompt(resume, jobDescription, gaps, skillsContext) }] }],
-          generationConfig: { temperature: 0.3, maxOutputTokens: 2000, responseMimeType: 'application/json' },
+          generationConfig: { temperature: 0.3, maxOutputTokens: 16384, responseMimeType: 'application/json' },
         });
         let responseText: string;
         try {
@@ -238,14 +243,14 @@ export async function rewriteAllBullets(
           return allBullets.map((b) => b.text);
         }
         try {
-          const parsed = JSON.parse(responseText);
+          const parsed = JSON.parse(stripCodeFences(responseText));
           if (Array.isArray(parsed) && parsed.length === allBullets.length) {
             return parsed as string[];
           }
           // Wrong length — fall back to originals
           return allBullets.map((b) => b.text);
         } catch {
-          // Failed to parse JSON — fall back to originals
+          console.warn('[rewriteAllBullets] Failed to parse JSON, falling back to originals:', responseText.slice(0, 200));
           return allBullets.map((b) => b.text);
         }
       }),
@@ -257,6 +262,11 @@ export async function rewriteAllBullets(
       original: bullet.text,
       rewritten: (rewrittenTexts[i] ?? bullet.text).trim(),
       approved: false,
+    }));
+  } catch (err) {
+    console.warn('[rewriteAllBullets] Gemini call failed, returning originals:', err);
+    return allBullets.map((bullet) => ({
+      id: bullet.id, original: bullet.text, rewritten: bullet.text, approved: false,
     }));
   } finally {
     clearTimeout(timer);
@@ -308,7 +318,7 @@ export async function extractKeywords(jobDescription: string): Promise<Extracted
           return fallbackTokenize(jobDescription);
         }
         try {
-          const parsed = JSON.parse(responseText);
+          const parsed = JSON.parse(stripCodeFences(responseText));
           if (Array.isArray(parsed) && parsed.length > 0 && parsed.every(isKeywordObject)) {
             const keywords = (parsed as Record<string, unknown>[]).map(normalizeKeyword);
             console.log('[extractKeywords] AI extracted', keywords.length, 'keywords:', keywords.slice(0, 3));

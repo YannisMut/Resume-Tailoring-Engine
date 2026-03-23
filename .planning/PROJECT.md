@@ -24,7 +24,7 @@ A user uploads their resume and a job description and gets back a layout-identic
 - [ ] User can review original vs. rewritten bullets and edit any rewrite before approving
 - [ ] User can download a DOCX that uses approved bullets and preserves original visual layout
 - [ ] Invalid or unparseable PDFs are rejected with a clear error message
-- [ ] OpenAI timeout surfaces a retry hint; analysis is preserved so the user doesn't re-upload
+- [ ] Gemini timeout surfaces a retry hint; analysis is preserved so the user doesn't re-upload
 
 ### Out of Scope
 
@@ -37,7 +37,7 @@ A user uploads their resume and a job description and gets back a layout-identic
 ## Context
 
 - **Architecture:** Monolith with 4 core services: `pdf.service.ts`, `ai.service.ts`, `analysis.service.ts`, `docx.service.ts`
-- **ai.service.ts is the only file that touches OpenAI** — fully isolated and swappable
+- **ai.service.ts is the only file that touches Gemini** — fully isolated and swappable
 - **ResumeStructure** is the core data type separating content from layout; it flows from parse → analyze → generate
 - Two API routes: `POST /api/analyze` (PDF + JD → score, gaps, rewrites, ResumeStructure) and `POST /api/generate` (approved bullets + ResumeStructure → DOCX binary)
 - **3-step wizard UI:** Step 1 = upload, Step 2 = review/edit bullets, Step 3 = download DOCX
@@ -45,7 +45,7 @@ A user uploads their resume and a job description and gets back a layout-identic
 
 ## Constraints
 
-- **AI provider**: OpenAI GPT-4o only in v1 — isolated in `ai.service.ts` for future swapping
+- **AI provider**: Gemini 2.5 Flash only in v1 — isolated in `ai.service.ts` for future swapping
 - **Input format**: PDF resumes only — no DOCX/HTML input
 - **No persistence**: stateless v1 — user must re-upload if session is lost (mitigated by preserving analysis state on error)
 - **Error handling**: services throw, one global middleware catches — no scattered try/catch

@@ -22,10 +22,10 @@
 
 ### AI Rewrites
 
-- [x] **AI-01**: System rewrites all resume bullets using GPT-4o to improve keyword alignment with the job description
+- [x] **AI-01**: System rewrites all resume bullets using Gemini 2.5 Flash to improve keyword alignment with the job description
 - [x] **AI-02**: AI rewrite prompt explicitly prohibits inventing metrics, percentages, timeframes, or technologies not present in the original bullet
-- [x] **AI-03**: System retries failed OpenAI calls with exponential backoff (3 attempts) before surfacing an error
-- [x] **AI-04**: System surfaces an OpenAI timeout as a retriable error with a user-facing retry hint; analysis state is preserved so the user does not need to re-upload
+- [x] **AI-03**: System retries failed Gemini calls with exponential backoff (3 attempts) before surfacing an error
+- [x] **AI-04**: System surfaces a Gemini timeout as a retriable error with a user-facing retry hint; analysis state is preserved so the user does not need to re-upload
 
 ### Review UI
 

@@ -7,5 +7,6 @@ export const PDF_ERROR_MESSAGES: Record<string, string> = {
     'This PDF is password-protected — remove the password and try again',
   pdf_corrupt: 'This PDF could not be read — try a different file',
   jd_too_long: 'Job description is too long — please trim it to 5,000 characters',
+  ai_timeout: 'AI service timed out — please try again',
   unknown: 'Something went wrong — please try again',
 };

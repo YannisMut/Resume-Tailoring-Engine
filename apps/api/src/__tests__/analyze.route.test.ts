@@ -10,6 +10,11 @@ vi.mock('../services/pdf.service.js', () => ({
 // Mock ai.service — factory uses vi.fn() directly (avoids hoisting variable reference issue)
 vi.mock('../services/ai.service.js', () => ({
   rewriteAllBullets: vi.fn(),
+  extractKeywords: vi.fn().mockResolvedValue([
+    { keyword: 'typescript', aliases: [], priority: 'required', category: 'hard_skill' },
+    { keyword: 'react', aliases: [], priority: 'required', category: 'hard_skill' },
+    { keyword: 'node', aliases: ['Node.js', 'nodejs'], priority: 'preferred', category: 'tool' },
+  ]),
 }));
 
 import * as pdfServiceMock from '../services/pdf.service.js';

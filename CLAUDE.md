@@ -2,6 +2,86 @@
 
 ## Bug Fix Learnings
 
+### Gemini API — two sequential calls exceed 60s timeout on free tier
+`analyzeResume` makes two sequential Gemini calls: `extractKeywords` (~15-30s) then
+`rewriteAllBullets` (~15-30s). With `GEMINI_TIMEOUT_MS = 60_000`, the combined time can exceed
+the timeout, causing the first or second call to fail. The Next.js rewrite proxy also drops the
+connection if the total response time is too long ("socket hang up" / ECONNRESET).
+
+The two calls must stay sequential — `rewriteAllBullets` needs the keyword gaps from
+`extractKeywords` to incorporate missing terms into the rewrites.
+
+**Fix:** Increase `GEMINI_TIMEOUT_MS` to `120_000` (2 minutes) in `ai.service.ts`. Also increase
+the Next.js proxy timeout if needed (it defaults to ~2 minutes, so should be fine). This gives
+each call its full budget without the combined time blowing past the limit.
+
+**Do NOT parallelize** — keywords must be extracted first so the rewrite call knows which terms to
+incorporate.
+
+### Gemini model names — use exact names from ListModels, no date suffixes
+`gemini-3-flash-preview` is the currently working model for this project (confirmed March 2026).
+`gemini-2.5-flash` is available (no date suffix). `gemini-2.5-flash-preview-05-20` returns 404.
+
+**To find valid model names for the current API key:**
+```bash
+export $(grep GEMINI_API_KEY apps/api/.env)
+node -e "fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + process.env.GEMINI_API_KEY).then(r=>r.json()).then(d=>d.models.forEach(m=>console.log(m.name)))"
+```
+
+### Gemini API — `responseMimeType: 'application/json'` causes 30–38s response times on gemini-3-flash-preview
+Constrained decoding (JSON mode) is extremely slow on `gemini-3-flash-preview` — a simple prompt
+takes 30–38s vs ~1s without it. This causes 60s timeouts. However, WITHOUT `responseMimeType`,
+the model returns markdown-fenced JSON or adds extra text, which fails `JSON.parse`.
+
+**Resolution:** Switch to `gemini-2.5-flash` which does not have this slowness. Keep
+`responseMimeType: 'application/json'` — it is needed for reliable JSON output and works fine
+on non-preview models. Add `stripCodeFences()` as a safety net regardless:
+```typescript
+function stripCodeFences(text: string): string {
+  const fenced = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?\s*```/);
+  return fenced ? fenced[1]! : text.trim();
+}
+```
+Use `JSON.parse(stripCodeFences(responseText))` instead of `JSON.parse(responseText)`.
+
+### Gemini API — `rewriteAllBullets` outer try/finally has no catch block
+Without a `catch`, any Gemini error (rate limit, 404, timeout) propagates to Express as an
+unhandled error → 500 response → "Something went wrong" on the frontend.
+
+**Fix:** Add a catch that returns originals gracefully, matching how `extractKeywords` handles failures:
+```typescript
+} catch (err) {
+  console.warn('[rewriteAllBullets] Gemini call failed, returning originals:', err);
+  return allBullets.map((bullet) => ({
+    id: bullet.id, original: bullet.text, rewritten: bullet.text, approved: false,
+  }));
+} finally {
+  clearTimeout(timer);
+}
+```
+
+### Gemini API — bullet rewrite response truncated by low maxOutputTokens causes silent fallback
+`rewriteAllBullets()` uses `responseMimeType: 'application/json'` (pretty-printed output). With
+`maxOutputTokens: 2000` and a full resume (20–30 bullets), the JSON array was cut off mid-response,
+causing `JSON.parse()` to throw and silently return original bullet texts — no warning logged.
+
+**Fix:** Increase `maxOutputTokens` to `16384` for the bullet rewrite call. Also add a `console.warn`
+in the JSON parse catch block so the fallback is visible in logs immediately. Additionally, add
+a `catch` block on the outer try/finally — without it, any Gemini error (rate limit, model error)
+propagates as an unhandled error to Express and crashes the request instead of gracefully degrading.
+
+**Diagnosis pattern:** If rewritten bullets in ReviewStep look identical to originals, check server
+logs for `[rewriteAllBullets] Failed to parse JSON`. If nothing appears, the server may be running
+stale code — restart with `npm run dev --workspace=apps/api`.
+
+### Frontend error parsing — API error codes never displayed
+The API returns `{ error: "ai_timeout", message: "..." }` (flat string at `body.error`), but the
+frontend was reading `body.error.code` (nested object path). Since `"ai_timeout".code` is
+`undefined`, every error fell through to `'unknown'` → "Something went wrong — please try again".
+
+**Fix:** Change the frontend extraction to `typeof body.error === 'string' ? body.error : 'unknown'`.
+Also add missing error codes (like `ai_timeout`) to the error message map in `errors.ts`.
+
 ### pdfjs-dist v5 in Node.js with tsx — CJS/ESM worker setup
 This project runs via `tsx` which transpiles TypeScript to CJS. Static imports of ESM
 packages like pdfjs-dist create CJS proxy objects. Setting `GlobalWorkerOptions.workerSrc`

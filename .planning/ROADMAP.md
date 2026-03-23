@@ -82,12 +82,12 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Every bullet in the resume has a rewritten version targeting the job description's keywords
   2. Rewritten bullets do not introduce metrics, percentages, timeframes, or technologies not present in the original bullet
-  3. Transient OpenAI failures retry automatically up to 3 times before surfacing an error
-  4. When an OpenAI timeout occurs, the user sees a retry hint and the analysis state (score, gaps, existing rewrites) is preserved — no re-upload required
+  3. Transient Gemini failures retry automatically up to 3 times before surfacing an error
+  4. When a Gemini timeout occurs, the user sees a retry hint and the analysis state (score, gaps, existing rewrites) is preserved — no re-upload required
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — ai.service.ts: install openai, implement rewriteBullet/rewriteAllBullets/withRetry, unit tests GREEN (AI-01, AI-02, AI-03, AI-04)
+- [ ] 04-01-PLAN.md — ai.service.ts: install @google/generative-ai, implement rewriteBullet/rewriteAllBullets/withRetry, unit tests GREEN (AI-01, AI-02, AI-03, AI-04)
 - [ ] 04-02-PLAN.md — Wire rewriteAllBullets into analyzeResume, add integration tests for rewrites shape and AI timeout 504
 
 ### Phase 5: DOCX Generation

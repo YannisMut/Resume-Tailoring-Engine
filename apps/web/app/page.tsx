@@ -38,7 +38,9 @@ export default function WizardPage() {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        const code: string = (body as { error?: { code?: string } })?.error?.code ?? 'unknown';
+        const code: string = typeof (body as { error?: string })?.error === 'string'
+          ? (body as { error: string }).error
+          : 'unknown';
         const message = PDF_ERROR_MESSAGES[code] ?? PDF_ERROR_MESSAGES['unknown']!;
         setApiError(message);
         setStep({ name: 'upload' });
