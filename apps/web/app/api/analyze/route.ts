@@ -6,7 +6,8 @@ export async function POST(request: NextRequest) {
 
   let response: Response;
   try {
-    response = await fetch('http://localhost:3001/api/analyze', {
+    const apiUrl = process.env['API_URL'] ?? 'http://localhost:3001';
+    response = await fetch(`${apiUrl}/api/analyze`, {
       method: 'POST',
       headers: { 'content-type': contentType },
       body,

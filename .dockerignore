@@ -1,0 +1,12 @@
+node_modules
+.next
+.turbo
+dist
+*.tsbuildinfo
+.git
+.DS_Store
+*.log
+.env
+analyze_response.json
+generate_payload.json
+output.docx
