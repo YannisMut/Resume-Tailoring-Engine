@@ -52,7 +52,5 @@ RUN npm ci --omit=dev --workspace=apps/api --workspace=packages/types
 # Copy the built dist
 COPY --from=build /app/apps/api/dist/ ./apps/api/dist/
 
-EXPOSE 3001
-ENV PORT=3001
-
+# Railway sets PORT automatically — don't hardcode it
 CMD ["node", "apps/api/dist/index.js"]

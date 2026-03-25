@@ -37,9 +37,8 @@ COPY --from=build /app/apps/web/.next/standalone ./
 # Copy static assets (not included in standalone)
 COPY --from=build /app/apps/web/.next/static ./apps/web/.next/static
 
-EXPOSE 3000
-ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 # Standalone server entry mirrors the monorepo structure
+# Railway sets PORT automatically — don't hardcode it
 CMD ["node", "apps/web/server.js"]
