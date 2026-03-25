@@ -26,6 +26,9 @@ Thumbs.db
 *.sln
 *.sw?
 
+# Planning artifacts
+.planning/
+
 # Logs
 *.log
 npm-debug.log*
