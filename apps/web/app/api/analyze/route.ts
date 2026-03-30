@@ -14,8 +14,12 @@ export async function POST(request: NextRequest) {
       signal: AbortSignal.timeout(180_000), // 3 minutes — two sequential Gemini calls
     });
   } catch (err) {
+    const isTimeout = err instanceof Error && err.name === 'TimeoutError';
+    const [errorCode, status] = isTimeout
+      ? ['ai_timeout', 504]
+      : ['api_unreachable', 503];
     const msg = err instanceof Error ? err.message : 'proxy error';
-    return Response.json({ error: 'ai_timeout', message: msg }, { status: 504 });
+    return Response.json({ error: errorCode, message: msg }, { status });
   }
 
   const data = await response.arrayBuffer();
